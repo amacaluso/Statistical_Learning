@@ -53,7 +53,28 @@ load_and_update_metrics = function( MODEL = NA,
   
 }
 
+remove_columns_by_names = function (df, colNames)
+{
+  colnames_to_keep = colnames(df)[ ! colnames(df) %in% colNames ]
+  df = as.data.frame( df )[ , colnames_to_keep ]
+  df
+}
 
+ggplotRegression <- function (fit, regressore) 
+{
+  require(ggplot2)
+  png(paste("img/", regressore, "_regression_plot.png"))
+  
+  plot = ggplot(fit$model, aes_string(x = names(fit$model)[2], y = names(fit$model)[1])) + 
+    geom_point() +
+    stat_smooth(method = "lm", col = "red") +
+    labs(title = paste("Adj R2 = ",signif(summary(fit)$adj.r.squared, 5),
+                       # "Intercept =",signif(fit$coef[[1]],5 ),
+                       # " Slope =",signif(fit$coef[[2]], 5),
+                       " p-value (F-Statistic) =", signif(summary(fit)$coef[2,4], 5)))
+  print(plot)
+  dev.off()
+}
 
 
 
