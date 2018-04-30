@@ -174,3 +174,166 @@ MSPE
 
 
 
+
+if (!require(MASS)) {
+  install.packages("MASS")
+  library(MASS)
+}
+
+
+train_dataset$binary_quality = as.factor(ifelse( train_dataset$quality > 5, yes = "good", no = "bad"  ))
+test_dataset$binary_quality = as.factor( ifelse( test_dataset$quality > 5, yes = "good", no = "bad"  ))
+
+# Even though LDA assumes normal predictors, we will still use 
+# Fit the model on the training sample 
+predictors = c("pH", "sulphates")
+target_variable = "binary_quality"
+
+current_tr_set = train_dataset[, c(predictors, target_variable) ]
+current_ts_set = test_dataset[, c(predictors, target_variable) ]
+
+
+lda_fit = lda( binary_quality ~ ., data = current_tr_set)
+
+# Summary of results
+lda_fit
+
+# Histograms of discriminant function values by class
+plot(lda_fit)
+
+# Predict the lda fit on the test sample
+lda_pred = predict(lda_fit, newdata = current_ts_set)
+
+# Attributes in lda.pred
+names(lda_pred)
+
+# Display the first 25 predicted classes
+head(lda_pred$class, 10)
+table(lda_pred$class)
+
+# Display first 10 posterior probabilities
+head(lda_pred$posterior, 10)
+
+par( mfrow = c(2, 1) )
+plot( current_tr_set[, predictors[1]], current_tr_set[, predictors[2]],
+      col = factor(current_tr_set[, target_variable]))
+
+plot( current_ts_set[, predictors[1]], current_ts_set[, predictors[2]],
+      col = factor(current_ts_set[, target_variable]))
+
+
+# http://suanfazu.com/t/linear-discriminant-analysis-plot-projections-of-data-points-in-ggplot2/3016
+
+# Intercept and slope of decision boundary
+gmean <- lda_fit$prior %*% lda_fit$means
+const <- as.numeric( gmean %*% lda_fit$scaling )
+slope <- lda_fit$scaling[2]/lda_fit$scaling[1] 
+intercept <- const / lda_fit$scaling[2]
+
+par( mfrow = c(1,2) )
+# Plot decision boundary
+plot(current_tr_set[,predictors[2]] ~ current_tr_set[, predictors[1]], 
+     xlab = predictors[1], ylab = predictors[2], xlim = c(-1,4.5), ylim = c(0,3),
+     data = current_tr_set, 
+     pch = unclass(current_tr_set[,target_variable]), 
+     col = unclass(current_tr_set[,target_variable]))
+abline(slope, intercept )
+
+plot(current_ts_set[,predictors[2]] ~ current_ts_set[, predictors[1]], 
+     xlab = predictors[1], ylab = predictors[2], xlim = c(-1,4.5), ylim = c(0,3),
+     data = current_ts_set, 
+     pch = unclass(current_ts_set[,target_variable]), 
+     col = unclass(current_ts_set[,target_variable]) ) #♣, xlim = c(-2, 2))
+abline(intercept, slope )
+
+table(true = current_ts_set$binary_quality, predict = lda_pred$class)
+
+
+pred <- lda_pred
+my_points <- t(lda_fit$scaling %*% t(pred$x))
+
+head(my.points)
+head(current_ts_set)
+
+dim(my.points)
+dim(current_ts_set)
+
+
+my.df <- data.frame(var1 = current_ts_set[,predictors[1]],
+                    var2 = current_ts_set[,predictors[2]],
+                    LD1 = my.points[,1], 
+                    LD2 = my.points[,2])
+
+
+
+
+ggplot(data = my.df, aes(predictors[2], predictors[1]))+
+  geom_point(color = "red") 
+#  geom_point(aes(x=LD1, y=LD2 * slope + 2)) + 
+  geom_abline(intercept = intercept, slope = slope, size = 0.2)
+#  coord_fixed(xlim = c(-4, 4), ylim = c(-1, 2))
+
+
+
+
+
+
+
+
+
+
+# Test set confusion matrix
+
+table(true = test.lasvegas$delinquent, predict = lda.pred$class)
+
+# Total success rate
+
+mean(lda.pred$class == test.lasvegas$delinquent)
+
+# That's not bad, but notice the low sensitivity of this model.
+# Test set ROC curve and AUC
+
+predob = prediction(lda.pred$posterior[, 2], test.lasvegas$delinquent)
+perf = performance(predob, "tpr", "fpr")
+par(mfrow = c(1, 2))
+plot(perf, main = "LDA", colorize = TRUE)
+auc = c(auc, as.numeric(performance(predob, "auc")@y.values))
+names(auc)[2] = "lda"
+auc
+
+# Exactly the same as the linear probability model. 
+
+## Quadratic discriminant analysis
+
+# Fit the model on the training sample 
+
+qda.fit = qda(delinquent ~ ., data = train.lasvegas)
+
+# Summary of results
+
+qda.fit
+
+# Predict the qda fit on the test sample
+
+qda.pred = predict(qda.fit, newdata = test.lasvegas)
+
+# Confusion matrix
+
+table(true = test.lasvegas$delinquent, predict = qda.pred$class)
+
+# Total success rate
+
+mean(qda.pred$class == test.lasvegas$delinquent)
+
+# That's slightly worse than lda. Again, sensitivity is very low.
+# Test set ROC curve and AUC.
+
+predob = prediction(qda.pred$posterior[ ,2], test.lasvegas$delinquent)
+perf = performance(predob, "tpr", "fpr")
+plot(perf, main = "QDA", colorize = TRUE)
+auc = c(auc, as.numeric(performance(predob, "auc")@y.values))
+names(auc)[3] = "qda"
+auc
+
+
+
