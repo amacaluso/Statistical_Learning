@@ -1,6 +1,6 @@
 source('Utils.R')
 source('010_Data_preparation.R')
-
+ 
 
 
 
@@ -170,6 +170,130 @@ MSPE.TE.ridge = mean((pred.ridge-y.test)^2)
 MSPE = c(MSPE, MSPE.TE.ridge)
 names(MSPE)[7] = "TE.ridge"
 MSPE
+
+
+
+######################################################################################
+#**************************** Linear Discriminant Analysis **************************#
+######################################################################################
+
+if (!require(MASS)) {
+  install.packages("MASS")
+  library(MASS)
+}
+
+dataset$binary_quality = ifelse( dataset$quality>5, yes = 1,  no = 0 )
+seed = 100
+set.seed( seed ) 
+
+sample_id <- sample.int(n = nrow( dataset ), size = floor(0.80 * nrow( dataset )), replace = F)
+train_dataset <- dataset[ sample_id , ]
+test_dataset  <- dataset[ -sample_id , ]
+
+### BINARY QUALITY ###
+lda_fit = lda(binary_quality ~ ., data = remove_columns_by_names(train_dataset, "quality"))
+
+# Summary of results
+
+lda_fit
+
+# Histograms of discriminant function values by class
+
+plot(lda_fit)
+
+# Predict the lda fit on the test sample
+
+lda_pred = predict(lda_fit, newdata = test_dataset)
+prob_1 = lda_pred$posterior[, 2]
+Y_true = test_dataset$binary_quality
+ROC_matrix = ROC_analysis( prob_1,  Y_true)
+
+library(ROCR)
+
+predob = prediction(prob_1, Y_true)
+perf = performance(predob, "tpr", "fpr")
+par(mfrow = c(1, 1))
+plot(perf, main = "LDA", colorize = TRUE)
+
+###############################################################
+###############################################################
+###############################################################
+
+
+if (!require(MASS)) {
+  install.packages("MASS")
+  library(MASS)
+}
+
+
+dataset$binary_quality = ifelse( dataset$quality>5, yes = 1,  no = 0 )
+seed = 100
+set.seed( seed ) 
+
+sample_id <- sample.int(n = nrow( dataset ), size = floor(0.80 * nrow( dataset )), replace = F)
+train_dataset <- dataset[ sample_id , c(11,2,14) ]
+test_dataset  <- dataset[ -sample_id , c(11,2, 14) ]
+
+### BINARY QUALITY ###
+lda_fit = lda(binary_quality ~ ., data = train_dataset)
+
+
+np <- 10
+nd.x <- seq(from = min(test_dataset$alcohol), to = max(test_dataset$alcohol), length.out = np)
+nd.y <- seq(from = min(test_dataset$volatile.acidity), to = max(test_dataset$volatile.acidity), length.out = np)
+nd <- expand.grid(x = nd.x, y = nd.y)
+
+prd <- as.numeric(predict(lda_fit, newdata = test_dataset)$class)
+
+plot(test_dataset[, 1:2], col = factor(test_dataset$binary_quality))
+points(lda_fit$means, pch = "+", cex = 3, col = c("black", "red"))
+contour(x = nd.x, y = nd.y, z = matrix(prd, nrow = np, ncol = np), 
+        levels = c(1, 2), add = TRUE, drawlabels = FALSE)
+
+
+
+# Summary of results
+
+coefficients = lda_fit$scaling
+retta = as.matrix(test_dataset[, c(1,2)])%*%coefficients
+# Histograms of discriminant function values by class
+
+plot(lda_fit)
+plot(test_dataset[, 1:2], col = factor(test_dataset$binary_quality))
+lines(retta)
+points(lda_fit$means, pch = "+", cex = 3, col = c("black", "red"))
+contour(x = nd.x, y = nd.y, z = matrix(prd, nrow = np, ncol = np), 
+        levels = c(1, 2), add = TRUE, drawlabels = FALSE)
+
+
+
+p = predict(lda_fit, newdata = test_dataset)
+nd.x <- seq(from = min(test_dataset$fixed.acidity), to = max(test_dataset$fixed.acidity), length.out = np)
+nd.y <- seq(from = min(test_dataset$volatile.acidity), to = max(test_dataset$volatile.acidity), length.out = np)
+nd <- expand.grid(x = nd.x, y = nd.y)
+prd <- as.numeric(predict(lda_fit, newdata = test_dataset)$class)
+
+contour(x = nd.x, y = nd.y, z = matrix(prd, nrow = np, ncol = np), 
+        levels = c(1, 2), add = TRUE, drawlabels = FALSE)
+
+
+# Predict the lda fit on the test sample
+
+lda_pred = predict(lda_fit, newdata = test_dataset)
+prob_1 = lda_pred$posterior[, 2]
+Y_true = test_dataset$binary_quality
+ROC_matrix = ROC_analysis( prob_1,  Y_true)
+
+library(ROCR)
+
+predob = prediction(prob_1, Y_true)
+perf = performance(predob, "tpr", "fpr")
+par(mfrow = c(1, 1))
+plot(perf, main = "LDA", colorize = TRUE)
+
+
+
+
 
 
 
