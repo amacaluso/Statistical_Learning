@@ -32,10 +32,3 @@ set.seed( seed )
 sample_id <- sample.int(n = nrow( dataset ), size = floor(0.75 * nrow( dataset )), replace = F)
 train_dataset <- dataset[ sample_id , ]
 test_dataset  <- dataset[ -sample_id , ]
-
-
-
-
-
-
-

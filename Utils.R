@@ -1,8 +1,12 @@
-library(MASS)
-library(glmnet)
-library(ggplot2)
-library(parallel)
-
+ensureLibrary = function(packageName) {
+  
+  isPresent = any(row.names(installed.packages()) == packageName)
+  if(! isPresent) {
+    install.packages(packageName)
+  }
+  
+  library(packageName, character.only=TRUE)
+}
 
 
 evaluation_model = function( target_variable, prediction, MODEL)
@@ -149,33 +153,6 @@ get_os <- function(){
 }
 
 
-if (!require(caTools)) {
-  install.packages("caTools")
-  library(caTools)}
-  
-  if (!require(data.table)) {
-    install.packages("data.table")
-    library(data.table)
-}
-
-
-if (!require(ROCR)) {
-  install.packages("ROCR")
-  library(ROCR)
-}
-
-
-
-if (!require(glmnet)){
-  install.packages("glmnet")
-  library(glmnet)
-}
-
-
-if (!require(class)) {
-  install.packages("class")
-  library(class)
-}
 
 
 MD<-function(row){
@@ -183,17 +160,42 @@ MD<-function(row){
   mahalanobis(train_matrix , point,cov = tr_cov)
 }
 
-library(parallel)
-
-
-if (!require(caret)) {
-  install.packages("caret")
-  library(caret)
-}
 
 
 
-if (!require(e1071)) {
-  install.packages("e1071")
-  library(e1071)
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) 
+{
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
 }
