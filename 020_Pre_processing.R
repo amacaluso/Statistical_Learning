@@ -2,7 +2,6 @@
 
 source( 'Utils.R')
 
-
 ensureLibrary('MASS')
 ensureLibrary('glmnet')
 ensureLibrary('ggplot2')
@@ -14,8 +13,8 @@ ensureLibrary('data.table')
 ensureLibrary('ROCR')
 ensureLibrary('glmnet')
 ensureLibrary('class')
-ensureLibrary('ggplot2')
 ensureLibrary('plotly')
+# ensureLibrary('devtools')
 ensureLibrary('gridExtra')
 ensureLibrary('plotROC')
 
@@ -93,7 +92,7 @@ save( white_hist_density, file = file_name)
 
 
 
-rm( breaks, red_hist_density, white_hist_density )
+# rm( breaks, red_hist_density, white_hist_density )
 
 
 
@@ -137,7 +136,7 @@ save( density_variables, file = file_name)
 
 
 
-rm( n_var, plots, variables, density_variables)
+# rm( n_var, plots, variables, density_variables)
 
 # SEED = 12344321
 set.seed( SEED )
@@ -185,6 +184,6 @@ save( descriptive, file = paste0(folder, "/descriptive_table.Rdata"))
 
 
 
-rm( means_tr, sd_tr, cv_tr, means_ts, sd_ts, cv_ts,
-    descriptive_tr, descriptive_ts, descriptive)
+# rm( means_tr, sd_tr, cv_tr, means_ts, sd_ts, cv_ts,
+#     descriptive_tr, descriptive_ts, descriptive)
 
