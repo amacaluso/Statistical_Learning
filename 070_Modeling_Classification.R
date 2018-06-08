@@ -2,222 +2,19 @@
 
 source( 'Utils.R')
 
-ensureLibrary('MASS')
-ensureLibrary('glmnet')
-ensureLibrary('ggplot2')
-ensureLibrary('parallel')
-ensureLibrary('caret')
-ensureLibrary('e1071')
-ensureLibrary('caTools')
-ensureLibrary('data.table')
-ensureLibrary('ROCR')
-ensureLibrary('glmnet')
-ensureLibrary('class')
-ensureLibrary('ggplot2')
-ensureLibrary('plotly')
-ensureLibrary('gridExtra')
-ensureLibrary('recordPlot')
-
-
-
-red <- read.table( 'data/winequality-red.csv', sep = ";" , header = T)
-white <- read.table( 'data/winequality-white.csv' ,sep=";" , header = T )
-
-
-#create joint dataset
-red$type <- 0 #"red"
-white$type <-1 #"white"
-
-wine <- rbind.data.frame( red, white)
-wine$binary_quality <- ifelse( wine$quality <= 5, yes = 0, no = 1) #as.factor(ifelse(wine$quality<=5,0,1))
-
-wine_binary = remove_columns_by_names( df = wine, colNames = 'quality')
-wine = remove_columns_by_names( df = wine, colNames = 'binary_quality')
-
-
-
-
-dir.create("results")
-
-# EXPLORATORY ANALYSES ----------------------------------------------------
-
-folder = "results/EXPLORATORY_ANALYSES"
-dir.create( folder )
-
-# str(red)
-# summary(red)
-# pairs(red,col="red4")
-
-# str(white)
-# summary(white)
-# pairs(white, col="khaki1")
-
-# par(bg = "#c07f28")#dbaa87 #c6a17a #c6a17a
-# par(mfrow=c(2,1), bg="lightcyan3")
-# hist(red$quality,breaks = seq(1,10,by=.9),col="red4",xlab="wine quality (1-10)", main="Red wine",freq=F,ylim=c(0,0.6),xaxt="n")
-# rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = "white")
-# hist(red$quality,breaks = seq(1,10,by=.9),col="red4",xlab="wine quality (1-10)", main="Red wine",freq=F,ylim=c(0,0.6),xaxt="n",add=T)
-# axis(1,at=1:10)
-# lines(density(red$quality,bw=0.4)$x,density(red$quality,bw=0.4)$y,col="black",lwd=2)
-
-
-breaks = seq(1,10,by=.9)
-bw<-function(b, x) { b/bw.nrd0(x) }
-
-red_hist_density = ggplot( data = red ) + 
-                   geom_histogram( aes( x = red$quality,  y = ..density..), 
-                                   breaks = breaks, colour = "black", fill = c("red4")) + 
-                   geom_density( aes( x = red$quality ), adjust=bw(0.4, red$quality)) +
-                   scale_x_continuous( breaks = breaks) +
-                   xlab("wine quality (1-10)") + ggtitle("Red wine") +
-                   theme_bw() 
-
-red_hist_density = ggplotly( red_hist_density)
-
-file_name = paste0( folder, "/red_hist_density.Rdata")
-save( red_hist_density, file = file_name)
-
-# hist(white$quality,breaks = seq(1,10,by=.9),col="#ba9d1b",xlab="wine quality (1-10)", main="White wine",freq=F,ylim=c(0,0.6),xaxt="n")
-# rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = "white")
-# hist(white$quality,breaks = seq(1,10,by=.9),col="#ba9d1b",xlab="wine quality (1-10)", main="White wine",freq=F,ylim=c(0,0.6),xaxt="n",add=T)
-# axis(1,at=1:10)
-# lines(density(white$quality,bw=0.4)$x,density(white$quality,bw=0.4)$y,col="black",lwd=2)
-# par(mfrow=c(1,1))
-
-white_hist_density = ggplot( data = white ) + 
-                     geom_histogram( aes( x = white$quality,  y = ..density..), 
-                                     breaks = breaks, colour = "white", fill = c("#ba9d1b")) + 
-                     geom_density( aes( x = white$quality ), adjust=bw( 0.4, white$quality)) +
-                     scale_x_continuous( breaks = breaks) +
-                     xlab("wine quality (1-10)") + ggtitle("White wine") +
-                     theme_bw() 
-
-white_hist_density = ggplotly( red_hist_density)
-
-file_name = paste0( folder, "/white_hist_density.Rdata")
-save( white_hist_density, file = file_name)
-
-
-
-### GGPLOT2
-# "wine quality (1-10)",y="Density"
-# par(mfrow=c(1,1),bg="lightcyan3")
-# p1 <- ggplot(red, 
-#        aes(x=quality,fill="white")
-#        )
-# p1 + geom_density()
-# hist(red$quality,breaks = seq(1,10,by=.9),col="red4",xlab="wine quality (1-10)", main="Red wine",freq=F,ylim=c(0,0.6),xaxt="n")
-# axis(1,at=1:10)
-# lines(density(red$quality,bw=0.4)$x,density(red$quality,bw=0.4)$y,col="black",lwd=2)
-
-
-### L: CAMBIARE BANDWIDTH DI DENSITY???
-
-plot_density = function( var, unit)
-{
-  # var = 'fixed.acidity'
-  # unit = 'g(tartaric_acid)/dm^3)'
-  legend = paste( "bandwith =",round(density( wine[ , var ])$bw, 3))
-  
-  plot = ggplot() + geom_density( aes( x = wine[ , var]), col = "deepskyblue", lwd = 1) +
-                    geom_density( aes( x = red[ , var]), linetype = "dotted", col = "red4") +
-                    geom_density( aes( x = white[ , var]), linetype = "dotted", col = "#ba9d1b") +                    
-                    ggtitle( gsub( ".", " ", var, fixed = T )) + 
-                    xlab( unit) +
-                    theme_bw()
-                    #geom_text( legend ) 
-  return( plot)
-}
-
-
-n_var = length(colnames(wine)) - 1
-
-variables = colnames( wine )[ -n_var]
-
-unit_measures = c( 'g(tartaric_acid)/dm^3)', 'g(acetic_acid)/dm^3',
-                   'g/dm^3', 'g/dm^3', 'g(sodium_chloride)/dm^3',
-                   'mg/dm^3', 'mg/dm^3', 'g/cm^3','pH', 
-                   'g(potassium_sulphate)/dm^3', '% volume')
-
-
-plots = lapply( X = variables, FUN = plot_density, unit = unit_measures)
-density_variables = do.call("grid.arrange", c(plots, ncol=3))
-
-file_name = paste0( folder, "/variables_density.Rdata")
-save( density_variables, file = file_name)
-
-f<-function(var){
-  
-  meas_unit<-c(expression(g(tartaric_acid)/dm^3),
-               expression(g(acetic_acid)/dm^3),
-               expression(g/dm^3),
-               expression(g/dm^3),
-               expression(g(sodium_chloride)/dm^3),
-               expression(mg/dm^3),
-               expression(mg/dm^3),
-               expression(g/cm^3),
-               "pH",
-               expression(g(potassium_sulphate)/dm^3),
-               "% volume"
-  )
-  
-  max_den=max(density( x= eval(parse(text = noquote(paste0("wine$",var)) ) ) )$y,
-              density( x= eval(parse(text = noquote(paste0("red$",var)) ) ) )$y,
-              density( x= eval(parse(text = noquote(paste0("white$",var)) ) ) )$y)
-  
-  print(max_den)
-  
-  plot(density( x= eval(parse(text = noquote(paste0("wine$",var)) ) ) ),col="deepskyblue", lwd=2,
-       main=gsub("."," ",var,fixed=T),xlab=meas_unit[which(names(wine)==var)], ylim=c(0,max_den))
-  lines(density( x= eval(parse(text = noquote(paste0("red$",var)) ) ) ),col="red4", lwd=2, lty=2,
-       main=gsub("."," ",var,fixed=T),xlab=meas_unit[which(names(wine)==var)])
-  lines(density( x= eval(parse(text = noquote(paste0("white$",var)) ) ) ),col="#ba9d1b", lwd=2, lty=2,
-       main=gsub("."," ",var,fixed=T),xlab=meas_unit[which(names(wine)==var)])
-  #text(x=12,y=0.2,paste0("bandwith = ",round(density( x= eval(parse(text = noquote(paste0("red$",var)) ) ) )$bw)))
-  legend("topright",paste0("bandwith = ",round(density( x= eval(parse(text = noquote(paste0("wine$",var)) ) ) )$bw,4)), bty ="n", pch=NA) 
-}
-
-
-# par(mfrow=c(3,4),bg="white")
-# ifelse(get_os()=="linux",lapply(names(wine)[-dim(wine)[2]],f),
-#        mclapply(names(wine)[-dim(wine)[2]],f,mc.cores = 1))
-# # mclapply(names(wine)[-dim(wine)[2]],f) #works on windows
-# # lapply(names(wine)[-dim(wine)[2]],f) #works on linux
-# par(mfrow=c(1,1))
-
-# Let's now create a training and test set (80%/20%) split of the 6497 observations. 
-# Here we use stratified sampling, using 'binary_quality' as the stratification variable
+SEED = 12344321
+source( '020_Pre_processing.R') #REQUIRE SEED
 
 
 
 # SAMPLE SPLIT ------------------------------------------------------------
 
-
-
-
-set.seed(12344321)
-train.label = sample.split(wine_binary, SplitRatio = 3/5)
-
-# Check that the split is balanced
-
-train.wine_binary = wine_binary[train.label, ]
-train.wine = wine[train.label, ]
-
-test.wine_binary = wine_binary[!train.label,]
-test.wine = wine[!train.label,]
-
-mean(train.wine_binary$binary_quality)
-mean(test.wine_binary$binary_quality)
-
-mean(train.wine$quality)
-mean(test.wine$quality)
-
-
-
 # LINEAR PROBABILITY MODEL: BINARY QUALITY ---------------------------------
 
 lpm.fit.all <- lm(binary_quality ~ ., data = train.wine_binary)
 summary(lpm.fit.all)
+
+lpm_summary = as.data.frame( round( summary(lpm.fit.all)$coefficients, 2))
 
 # Predicted probabilities of quality
 lpm.all.probs <- predict(lpm.fit.all, newdata = test.wine_binary) #test
@@ -228,6 +25,19 @@ par(mfrow = c(1, 1))
 hist(x = lpm.all.probs, breaks = 50, col = "chartreuse3",
      xlab = "Predicted values", ylab = "Frequency",
      main = "Linear probability model - test set")
+
+lpm_all_probs = data.frame( lpm.all.probs )
+lpm_all_probs$lpm.all.probs = round(lpm_all_probs$lpm.all.probs, 2)
+
+lpm_predictions = ggplot( data = lpm_all_probs ) + 
+  geom_histogram( aes( x = lpm.all.probs), binwidth = 0.04, color="darkblue", fill="lightblue") + 
+  xlab("Predicted values") +  ylab("Frequency") + 
+  ggtitle("Linear probability model - test set") +
+  theme_bw() 
+
+lpm_predictions
+
+ggplotly( lpm_predictions )
 
 # hist(x = lpm.all.probs_train, breaks = 50, col = "orange",
 #      xlab = "Predicted probabilities", ylab = "Frequency",

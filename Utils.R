@@ -199,3 +199,15 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL)
     }
   }
 }
+
+
+
+
+cv = function( vector )
+{
+  sd = sd(vector)
+  mean = mean(vector)
+  cv = sd/abs( mean )
+  
+  return(cv)
+}
