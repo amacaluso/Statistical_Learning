@@ -1,15 +1,14 @@
-# DATA IMPORT -------------------------------------------------------------
 
 source( 'Utils.R')
 
 SEED = 12344321
-source( '020_Pre_processing.R') #REQUIRE SEED
+source( '020_Pre_processing.R') # REQUIRE SEED
+
+folder = "results/MODELING"
+dir.create( folder )
 
 
-
-# SAMPLE SPLIT ------------------------------------------------------------
-
-# LINEAR PROBABILITY MODEL: BINARY QUALITY ---------------------------------
+# LINEAR PROBABILITY MODEL: BINARY QUALITY
 
 lpm.fit.all <- lm(binary_quality ~ ., data = train.wine_binary)
 summary(lpm.fit.all)
@@ -20,33 +19,37 @@ lpm_summary = as.data.frame( round( summary(lpm.fit.all)$coefficients, 2))
 lpm.all.probs <- predict(lpm.fit.all, newdata = test.wine_binary) #test
 lpm.all.probs_train <- predict(lpm.fit.all, newdata = train.wine_binary) #train
 
-par(mfrow = c(1, 1))
-
-hist(x = lpm.all.probs, breaks = 50, col = "chartreuse3",
-     xlab = "Predicted values", ylab = "Frequency",
-     main = "Linear probability model - test set")
+# par(mfrow = c(1, 1))
+# 
+# hist(x = lpm.all.probs, breaks = 50, col = "chartreuse3",
+#      xlab = "Predicted values", ylab = "Frequency",
+#      main = "Linear probability model - test set")
 
 lpm_all_probs = data.frame( lpm.all.probs )
 lpm_all_probs$lpm.all.probs = round(lpm_all_probs$lpm.all.probs, 2)
 
-lpm_predictions = ggplot( data = lpm_all_probs ) + 
-  geom_histogram( aes( x = lpm.all.probs), binwidth = 0.04, color="darkblue", fill="lightblue") + 
-  xlab("Predicted values") +  ylab("Frequency") + 
-  ggtitle("Linear probability model - test set") +
-  theme_bw() 
+lpm_probs = ggplot( data = lpm_all_probs ) + 
+            geom_histogram( aes( x = lpm.all.probs), binwidth = 0.04, color="darkblue", fill="lightblue") + 
+            xlab("Predicted values") +  ylab("Frequency") + 
+            ggtitle("Linear probability model - test set") +
+            theme_bw() 
 
-lpm_predictions
+lpm_probs = ggplotly( lpm_probs )
 
-ggplotly( lpm_predictions )
+# ********** Saving a file ******************* #
+################################################
+file_name = paste0( folder, "/lpm_probs.Rdata")
+save( lpm_probs, file = file_name)
+################################################
 
-# hist(x = lpm.all.probs_train, breaks = 50, col = "orange",
-#      xlab = "Predicted probabilities", ylab = "Frequency",
-#      main = "Linear probability model")
+rm(lpm_probs)
+
 
 # Predicted outcomes, threshold optimization
+tresholds<-seq( from = 0, to = 1, by = 0.01)
 
-tresholds<-seq(0,1,by=0.01)
-class_err<-matrix(0,length(tresholds),3)
+class_err <- matrix( 0, length( tresholds ), 3)
+
 for (i in tresholds){
   lpm.all.class = ifelse(lpm.all.probs > i, 1, 0) #test
   lpm.all.class_train = ifelse(lpm.all.probs_train > i, 1, 0) #train
@@ -88,7 +91,8 @@ lpm.all.class = ifelse(lpm.all.probs > best_treshold$treshold, 1, 0) #test
 lpm.all.class_train = ifelse(lpm.all.probs_train > best_treshold$treshold, 1, 0) #train
 
 # confusion matrix
-View(ROC_analysis( prediction = lpm.all.probs, y_true = test.wine_binary$binary_quality))
+ROC_lpm = cbind( Model = 'Linear_Probability_Model', 
+                    ROC_analysis( prediction = lpm.all.probs, y_true = test.wine_binary$binary_quality))
 
 table(true = test.wine_binary$binary_quality, predict = lpm.all.class) #test
 table(true = train.wine_binary$binary_quality, predict = lpm.all.class_train) #train
@@ -106,28 +110,50 @@ par(mfrow = c(1, 1))
 plot(perf, main = "Linear probability model - test set", colorize = TRUE,
      print.cutoffs.at = seq(0, 1, by = 0.1), text.adj = c(-0.2, 1.7))
 
-abline(h=perf@y.values[[1]][   head(which(perf@alpha.values[[1]] <= best_treshold$treshold))[1] ],lty=2,col="blueviolet" )
-abline(v=perf@x.values[[1]][   head(which(perf@alpha.values[[1]] <= best_treshold$treshold))[1] ],lty=2,col="blueviolet" )
+h = perf@y.values[[1]][   head(which(perf@alpha.values[[1]] <= best_treshold$treshold))[1] ]
+abline(h = h,lty=2,col="blueviolet" )
+
+v = perf@x.values[[1]][   head(which(perf@alpha.values[[1]] <= best_treshold$treshold))[1] ]
+abline(v = v, lty = 2, col = "blueviolet" )
 
 auc = c(as.numeric(performance(predob, "auc")@y.values))
 names(auc) = c("lpm")
 auc
 
 
-# DISCRIMINANT ANALYSIS --------------------------------------------
+ROC_matrix_lpm = ROC_analysis( prediction = lpm.all.probs, 
+                               y_true = test.wine_binary$binary_quality, 
+                               probability_thresholds = tresholds)
+ROC_matrix_lpm = data.frame( treshold = ROC_matrix_lpm$probability_thresholds,
+                             FPR = 1-ROC_matrix_lpm$`Specificity: TN/negative`, 
+                             TPR = ROC_matrix_lpm$`Sensitivity (AKA Recall): TP/positive` )
+
+roc_curve_lpm = ggplot(ROC_matrix_lpm, aes(x = FPR, y = TPR, label = treshold)) +
+                geom_line() + theme_bw() + 
+                style_roc() + annotate("point", x = v, y = h, colour = "blue")
+
+
+roc_curve_lpm = ggplotly( roc_curve_lpm )
+
+
+# ********** Saving a file ******************* #
+################################################
+file_name = paste0( folder, "/lpm_roc_curve.Rdata")
+save( roc_curve_lpm, file = file_name)
+################################################
+
+# plot_interactive_roc( basicplot )
+
+
+
+
+
+# DISCRIMINANT ANALYSIS
 
 ## Linear discriminant analysis
 
-if (!require(MASS)) {
-  install.packages("MASS")
-  library(MASS)
-}
-
 # Coefficiente di variazione
 
-CV<-function(x){
-  sd(x)/abs(mean(x))
-}
 
 coeff_var<-apply(train.wine_binary[,-13],2,CV)
 
@@ -146,6 +172,25 @@ group_distances
 var_importance<-sort(abs(diff(lda.fit$means))/coeff_var)
 names(var_importance)<-colnames(diff(lda.fit$means))[as.vector(order((abs(diff(lda.fit$means))/coeff_var)))]
 var_importance
+
+
+###############
+###############
+
+var_importance = data.frame( variable = names(var_importance), 
+                             Importance = round( var_importance,2) , 
+                             row.names = 1:length(var_importance) )
+#var_importance[ order(var_importance$Importance)]
+
+plot = ggplot(var_importance, aes( variable, Importance, color = variable)) +
+       geom_bar(  stat = "identity", position='stack') + 
+#       opts(axis.text.x=theme_text(angle=-90)) +
+       ggtitle( "LDA - Variable importance" ) + theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1,  size = 12, hjust = 1))
+
+plyplot = ggplotly( plot) 
+plyplot
+
 
 # Histograms of discriminant function values by class
 

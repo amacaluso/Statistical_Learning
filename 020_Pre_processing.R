@@ -17,6 +17,8 @@ ensureLibrary('class')
 ensureLibrary('ggplot2')
 ensureLibrary('plotly')
 ensureLibrary('gridExtra')
+ensureLibrary('plotROC')
+
 
 
 
@@ -159,11 +161,11 @@ statistics = c( "Mean", "Standard Deviation", "Coefficient of variation" )
 
 means_tr = apply( X = train.wine, MARGIN = 2, FUN = mean)
 sd_tr = apply( X = train.wine, MARGIN = 2, FUN = sd)
-cv_tr = apply( X = train.wine, MARGIN = 2, FUN = cv)
+cv_tr = apply( X = train.wine, MARGIN = 2, FUN = CV)
 
 means_ts = apply( X = test.wine, MARGIN = 2, FUN = mean)
 sd_ts = apply( X = test.wine, MARGIN = 2, FUN = sd)
-cv_ts = apply( X = test.wine, MARGIN = 2, FUN = cv)
+cv_ts = apply( X = test.wine, MARGIN = 2, FUN = CV)
 
 descriptive_tr = as.data.frame( round( rbind( means_tr, sd_tr, cv_tr ), 3 ) )
 descriptive_tr = cbind( Set = "Training Set", Statistic = statistics, descriptive_tr )
