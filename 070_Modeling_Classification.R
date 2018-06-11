@@ -1,4 +1,3 @@
-
 ### ***** IMPORT ***** ###
 ##########################
 
@@ -47,10 +46,10 @@ lpm_all_probs = data.frame( lpm.all.probs )
 lpm_all_probs$lpm.all.probs = round(lpm_all_probs$lpm.all.probs, 2)
 
 lpm_probs = ggplot( data = lpm_all_probs ) + 
-            geom_histogram( aes( x = lpm.all.probs), binwidth = 0.04, color="darkblue", fill="lightblue") + 
-            xlab("Predicted values") +  ylab("Frequency") + 
-            ggtitle("Linear probability model - test set") +
-            theme_bw() 
+  geom_histogram( aes( x = lpm.all.probs), binwidth = 0.04, color="darkblue", fill="lightblue") + 
+  xlab("Predicted values") +  ylab("Frequency") + 
+  ggtitle("Linear probability model - test set") +
+  theme_bw() 
 
 lpm_probs = ggplotly( lpm_probs )
 
@@ -78,23 +77,23 @@ class_err <- matrix( 0, length( tresholds ), 3)
 for (i in tresholds){
   lpm.all.class = ifelse(lpm.all.probs > i, 1, 0) #test
   lpm.all.class_train = ifelse(lpm.all.probs_train > i, 1, 0) #train
-
+  
   # confusion matrix
-
+  
   table(true = test.wine_binary$binary_quality, predict = lpm.all.class) #test
   table(true = train.wine_binary$binary_quality, predict = lpm.all.class_train) #train
-
+  
   # Total success rate
-
+  
   test_err<-mean(lpm.all.class == test.wine_binary$binary_quality) #test
   train_err<-mean(lpm.all.class_train == train.wine_binary$binary_quality) #train
-
+  
   class_err[which(tresholds==i),]<-c(i,test_err,train_err)
   writeLines(paste0("threshold: ", i))
-
+  
   writeLines(paste0("Test error: ",test_err))
   writeLines(paste0("Train error: ",train_err,"\n"))
-
+  
 }
 
 class_err<-as.data.frame(class_err)
@@ -152,16 +151,16 @@ ROC_matrix_lpm = data.frame( treshold = ROC_matrix_lpm$probability_thresholds,
                              TPR = ROC_matrix_lpm$`Sensitivity (AKA Recall): TP/positive` )
 
 roc_curve_lpm = ggplot(ROC_matrix_lpm, aes(x = FPR, y = TPR, label = treshold)) +
-                geom_line(color = "red") + theme_bw() + 
-                style_roc() + annotate("point", x = v, y = h, colour = "white")+
-                ggtitle( "Linear probability model - test set")
+  geom_line(color = "red") + theme_bw() + 
+  style_roc() + annotate("point", x = v, y = h, colour = "white")+
+  ggtitle( "Linear probability model - test set")
 
 
 roc_curve_lpm = ggplotly( roc_curve_lpm )
 roc_curve_lpm
 
 # ********** Saving a file ******************* #
-################################################
+
 file_name = paste0( folder_plot, "/lpm_roc_curve.Rdata")
 save( roc_curve_lpm, file = file_name)
 ################################################
@@ -175,7 +174,7 @@ save( roc_curve_lpm, file = file_name)
 # DISCRIMINANT ANALYSIS
 
 ## Linear discriminant analysis
-
+################################################
 # Coefficiente di variazione
 
 coeff_var<-apply( train.wine_binary[, -13 ], 2, CV)
@@ -183,7 +182,7 @@ lda.fit = lda(binary_quality ~ ., data = train.wine_binary)
 
 # Summary of results
 group_means_lda = lda.fit$means
-coeff_lda = lda.fit$scaling
+coeff_lda = round(lda.fit$scaling, 3)
 
 # ---> DA SALVARE? MAGARI INTERPRETARE
 
@@ -205,46 +204,113 @@ var_importance = data.frame( variable = names(var_importance),
 #var_importance[ order(var_importance$Importance)]
 
 lda_importance = ggplot(var_importance, aes( variable, Importance, color = variable)) +
-                 geom_bar(  stat = "identity", position='stack') + 
-                 ggtitle( "LDA - Variable importance" ) + theme_bw() +
-                 theme(axis.text.x = element_text(angle = 45, vjust = 1,  size = 12, hjust = 1))
+  geom_bar(  stat = "identity", position='stack') + 
+  ggtitle( "LDA - Variable importance" ) + theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1,  size = 12, hjust = 1))
 
 lda_importance = ggplotly( lda_importance) 
 lda_importance
 
+# ********** Saving a file ******************* #
+file_name = paste0( folder_plot, "/lda_importance.Rdata")
+save( lda_importance, file = file_name)
+################################################
+
+
+
 
 # Histograms of discriminant function values by class
+######################################################
+
 plot(lda.fit)
 
+
 # Predict the lda fit on the test sample
+
 lda.pred = predict(lda.fit, newdata = test.wine_binary) #test
 lda.pred1 = predict(lda.fit, newdata = train.wine_binary) #train
 
-lda_pred_bad = data.frame( label = 'bad', prob = lda.pred$x[test.wine_binary$binary_quality==0] )
-lda_pred_good = data.frame( label = 'good', prob = lda.pred$x[test.wine_binary$binary_quality==1] )
-lda_pred = rbind( lda_pred_bad, lda_pred_good )
+hist(lda.pred$x[test.wine_binary$binary_quality==0],xlim = c(-10,10), probability = T,col="red") #bad
+hist(lda.pred$x[test.wine_binary$binary_quality==1],xlim = c(-10,10),add=T,probability = T,col="blue") #good
 
+intersection = (mean(lda.pred1$x[train.wine_binary$binary_quality==0])+
+                mean(lda.pred1$x[train.wine_binary$binary_quality==1]))/2 
 
-hist( lda_pred_bad, xlim = c(-10,10), probability = T, col = "red") #bad
-hist( lda_pred_good, xlim = c(-10,10), add=T, probability = T, col = "blue") #good
-
-a = ggplot() + aes(lda_pred_bad) + geom_histogram( colour="black", fill="white")
-
-a = a + ggplot() + aes(lda_pred_good) + geom_histogram( colour="white", fill="white")
-
-lda_hist_1_vs_0 = ggplot(lda_pred, aes( x = prob, y = ..density.. )) +
-                  geom_histogram(data = subset(lda_pred, label == 'bad'), fill = "red", alpha = 0.2) +
-                  geom_histogram(data = subset(lda_pred, label == 'good'), fill = "blue", alpha = 0.2)
-
-lda_hist_1_vs_0 = ggplotly( lda_hist_1_vs_0)
-lda_hist_1_vs_0
 
 
 #test sample
 plot(density(lda.pred$x[test.wine_binary$binary_quality==0]),col="red") #bad
 lines(density(lda.pred$x[test.wine_binary$binary_quality==1]),col="blue") #good
-abline(v=(mean(lda.pred1$x[train.wine_binary$binary_quality==0])+
-            mean(lda.pred1$x[train.wine_binary$binary_quality==1]))/2,lty=2,lwd=2, col = 3)
+abline(v = intersection,lty = 2, lwd = 2, col = 3)
+
+#train sample
+# plot(density(lda.pred1$x[train.wine_binary$binary_quality==0]),col="red")
+# lines(density(lda.pred1$x[train.wine_binary$binary_quality==1]),col="blue")
+# abline(v = intersection, lty = 2, lwd = 2, col = 'green')
+
+
+# Predict the lda fit on the test sample
+
+lda_pred_bad_ts = data.frame( label = 'bad', prob = lda.pred$x[test.wine_binary$binary_quality==0] )
+lda_pred_good_ts = data.frame( label = 'good', prob = lda.pred$x[test.wine_binary$binary_quality==1] )
+lda_pred_ts = rbind( lda_pred_bad_ts, lda_pred_good_ts )
+
+lda_hist_1_vs_0 = ggplot(lda_pred_ts, aes( x = prob, y = ..density.. )) +
+  geom_histogram(data = subset(lda_pred_ts, label == 'bad'), fill = "red", alpha = 0.2, binwidth = 0.5) +
+  geom_histogram(data = subset(lda_pred_ts, label == 'good'), fill = "blue", alpha = 0.2, binwidth = 0.5) +
+  ggtitle( "Bad vs Good (test set)") 
+
+lda_hist_1_vs_0 = ggplotly( lda_hist_1_vs_0)
+
+
+# ********** Saving a file ******************* #
+file_name = paste0( folder_plot, "/lda_hist_1_vs_0.Rdata")
+save( lda_hist_1_vs_0, file = file_name)
+# ******************************************** #
+
+
+
+
+
+lda_line_1_vs_0 = ggplot(lda_pred_ts, aes( x = prob, y = ..density.. )) +
+  geom_density(data = subset(lda_pred_ts, label == 'bad'), fill = "red", alpha = 0.2) +
+  geom_density(data = subset(lda_pred_ts, label == 'good'), fill = "blue", alpha = 0.2) +
+  ggtitle( "Bad vs Good (test set)") + 
+  geom_vline( xintercept = intersection )
+
+lda_line_1_vs_0 = ggplotly( lda_line_1_vs_0 )
+lda_line_1_vs_0
+
+
+# ********** Saving a file ******************* #
+file_name = paste0( folder_plot, "/lda_line_1_vs_0.Rdata")
+save( lda_line_1_vs_0, file = file_name)
+################################################
+
+
+
+lda_pred_tr = predict(lda.fit, newdata = train.wine_binary) #train
+
+lda_pred_bad_tr = data.frame( label = 'bad', prob = lda_pred_tr$x[test.wine_binary$binary_quality==0] )
+lda_pred_good_tr = data.frame( label = 'good', prob = lda_pred_tr$x[test.wine_binary$binary_quality==1] )
+lda_pred_tr = rbind( lda_pred_bad_tr, lda_pred_good_tr )
+
+
+
+## TEST SET
+hist( lda_pred_bad_ts$prob, xlim = c(-10,10), probability = T, col = "red") #bad
+hist( lda_pred_good_ts$prob, xlim = c(-10,10), add=T, probability = T, col = "blue") #good
+
+
+
+
+#test sample
+plot(density(lda_pred_bad_ts$prob), col="red") #bad
+lines(density(lda_pred_good_ts$prob),col="blue") #good
+
+intersect = (mean(lda_pred_bad_tr$prob) + mean(lda_pred_good_tr$prob))/2
+abline(v=intersect, lty = 2, lwd=2, col = 3)
+
 
 
 #train sample
@@ -392,6 +458,9 @@ plot(perf, main = "Linear Discriminant Analysis - test set", colorize = TRUE,
 auc = c(auc, as.numeric(performance(predob, "auc")@y.values))
 names(auc)[2] = "lda"
 auc
+################################################
+
+
 
 
 ## Quadratic discriminant analysis
@@ -579,64 +648,64 @@ knn.sr = function(K){
 # Now, set up a loop to evaluate 'knn.sr' on all the elements of K.vec, and store the results in 'sr.vec'
 
 for (h in 1:10){
-
-# set.seed(abs(rnorm(n = 1)))
-rand_prop=4/5#runif(min = 0, max = 1, n = 1)
-seed_sampling=abs(rnorm(n = 1,mean = rpois(lambda = 46,n = 1),sd = 231))
-set.seed(seed_sampling)
-train.label = sample.split(wine_binary, SplitRatio = rand_prop)
-
-# Check that the split is balanced
-
-train.wine_binary = wine_binary[train.label, ]
-train.wine = wine[train.label, ]
-
-test.wine_binary = wine_binary[!train.label,]
-test.wine = wine[!train.label,]
-
-X = as.matrix(wine_binary[, -13])
-X.train = X[train.label,]
-X.test = X[!train.label,]
-Y = wine_binary$binary_quality
-Y.train = Y[train.label]
-Y.test = Y[!train.label]
-    
-seed_knn=runif(min = 1, max = 1000, n = 1)
-set.seed(seed_knn) #needed for ties in majority votes
-if(get_os()=="linux")
-  sr.vec <- lapply(K.vec,knn.sr) else 
-  sr.vec <- mclapply(K.vec,knn.sr,mc.cores = 1)
-
-# knn.sr1 = function(K){
-#   knn.pred = knn(X.train, X.test, Y.train, k = K)
-#   return(c(K, mean(knn.pred == Y.test)))
-# }
-# 
-# set.seed(12344321)
-# sr.vec1 <- lapply(K.vec,knn.sr1)
-# 
-# for (i in 1:length(sr.vec)){
-#   if (sr.vec1[[i]][2]!=sr.vec[[i]])
-#     print(i)
-# }
-
-# for(i in 1:length(K.vec)) {
-#   sr.vec[i] = knn.sr(K.vec[i])
-# }
-
-# Finally, plot the success rate as a function of K
-
-par(mfrow = c(1, 1))
-plot(K.vec, sr.vec,type="l",main=paste0("Iterantion ",h))
-# Notice the 'inverse U-shape'. K between 10 and 20 seems optimal
-
-k.min = min(which.max(sr.vec))
-print(paste0("Iteration n. ",h))
-print(paste0("random seed for sampling: ",seed_sampling))
-print(paste0("random proprotion: ",rand_prop))
-print(paste0("random seed for knn: ",seed_knn))
-print(paste0("Min k neighbour: ",k.min))
-print(paste0("Accuracy: ",sr.vec[k.min]))
+  
+  # set.seed(abs(rnorm(n = 1)))
+  rand_prop=4/5#runif(min = 0, max = 1, n = 1)
+  seed_sampling=abs(rnorm(n = 1,mean = rpois(lambda = 46,n = 1),sd = 231))
+  set.seed(seed_sampling)
+  train.label = sample.split(wine_binary, SplitRatio = rand_prop)
+  
+  # Check that the split is balanced
+  
+  train.wine_binary = wine_binary[train.label, ]
+  train.wine = wine[train.label, ]
+  
+  test.wine_binary = wine_binary[!train.label,]
+  test.wine = wine[!train.label,]
+  
+  X = as.matrix(wine_binary[, -13])
+  X.train = X[train.label,]
+  X.test = X[!train.label,]
+  Y = wine_binary$binary_quality
+  Y.train = Y[train.label]
+  Y.test = Y[!train.label]
+  
+  seed_knn=runif(min = 1, max = 1000, n = 1)
+  set.seed(seed_knn) #needed for ties in majority votes
+  if(get_os()=="linux")
+    sr.vec <- lapply(K.vec,knn.sr) else 
+      sr.vec <- mclapply(K.vec,knn.sr,mc.cores = 1)
+  
+  # knn.sr1 = function(K){
+  #   knn.pred = knn(X.train, X.test, Y.train, k = K)
+  #   return(c(K, mean(knn.pred == Y.test)))
+  # }
+  # 
+  # set.seed(12344321)
+  # sr.vec1 <- lapply(K.vec,knn.sr1)
+  # 
+  # for (i in 1:length(sr.vec)){
+  #   if (sr.vec1[[i]][2]!=sr.vec[[i]])
+  #     print(i)
+  # }
+  
+  # for(i in 1:length(K.vec)) {
+  #   sr.vec[i] = knn.sr(K.vec[i])
+  # }
+  
+  # Finally, plot the success rate as a function of K
+  
+  par(mfrow = c(1, 1))
+  plot(K.vec, sr.vec,type="l",main=paste0("Iterantion ",h))
+  # Notice the 'inverse U-shape'. K between 10 and 20 seems optimal
+  
+  k.min = min(which.max(sr.vec))
+  print(paste0("Iteration n. ",h))
+  print(paste0("random seed for sampling: ",seed_sampling))
+  print(paste0("random proprotion: ",rand_prop))
+  print(paste0("random seed for knn: ",seed_knn))
+  print(paste0("Min k neighbour: ",k.min))
+  print(paste0("Accuracy: ",sr.vec[k.min]))
 }
 
 # [1] "Iteration n. 14"
@@ -753,14 +822,14 @@ MD_predict<-function(row,k_neigh){
   votes<-train.wine_binary$binary_quality[c(k_neigh[[row]])]
   getmode(votes)
 }
-  
+
 MD_knn<-function(k){
   #n_neigh<-k
   
   k_neigh<-mclapply(1:nrow(test_matrix),MD_retrive_neighbors,k)
   y.hat<-sapply(1:nrow(test_matrix),MD_predict,k_neigh,simplify = T)
   mean(y.hat==test.wine_binary$binary_quality)
-    # accuracy=0
+  # accuracy=0
   # for (i in 1:nrow(test_matrix))
   #   accuracy =  accuracy + ifelse(y.hat[[i]]==test.wine_binary$binary_quality[i],1,0)
   # accuracy/nrow(test_matrix)
@@ -861,7 +930,7 @@ names(fit.summary)
 # to the red line in fig. 3.5)
 
 plot_subset_error<-function(model.summary){
-
+  
   par(mfrow=c(1,3))
   plot(model.summary$rss, 
        xlab = "Number of Variables", ylab = "RSS",
@@ -908,7 +977,7 @@ plot_subset_error<-function(model.summary){
   # the intercept. Add a point to the plot to highlight the minimum
   
   points(imin, model.summary$cp[imin], pch = 17, col = "blue", cex=2)
-
+  
   return (imin) #according to Mallow's CP
 }
 
@@ -960,8 +1029,8 @@ fitControl = trainControl(method = "loocv")
 pGrid = expand.grid(nvmax = seq(from = 1, to = dim(train.wine)[2]-1, by = 1))
 repetition=10
 CV.fit = train(alcohol ~ ., data = train.wine, number = repetition,
-                     method = "leapForward", trControl = fitControl,
-                     tuneGrid = pGrid)
+               method = "leapForward", trControl = fitControl,
+               tuneGrid = pGrid)
 
 CV.fit$times
 
@@ -1050,9 +1119,9 @@ imin<-plot_subset_error(fit.summary)
 
 set.seed(1)
 CV.fit = train(alcohol ~ ., data = train.wine, number = repetition,
-                        method = "leapBackward", 
-                        trControl = fitControl, 
-                        tuneGrid = pGrid)
+               method = "leapBackward", 
+               trControl = fitControl, 
+               tuneGrid = pGrid)
 
 CV.fit$times
 
