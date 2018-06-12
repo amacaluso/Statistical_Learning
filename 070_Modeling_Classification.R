@@ -18,452 +18,9 @@ dir.create( folder_plot )
 ##################################
 
 
-# LINEAR PROBABILITY MODEL: BINARY QUALITY
-##########################################
-
-lpm.fit.all <- lm(binary_quality ~ ., data = train.wine_binary)
-# summary(lpm.fit.all)
-
-lpm_summary = as.data.frame( round( summary(lpm.fit.all)$coefficients, 2))
-
-# ********** Saving a file ******************* #
-#
-file_name = paste0( folder, "/lpm_summary.Rdata")
-save( lpm_summary, file = file_name)
-#
-
-
-# ++++ Inizializzazione ROC ++++ #
-ROC_all = ROC_analysis(1,1,0.5)[-1,]
-
-
-# Predicted probabilities of quality
-
-lpm.all.probs <- predict(lpm.fit.all, newdata = test.wine_binary) #test
-lpm.all.probs_train <- predict(lpm.fit.all, newdata = train.wine_binary) #train
-
-lpm_all_probs = data.frame( lpm.all.probs )
-lpm_all_probs$lpm.all.probs = round(lpm_all_probs$lpm.all.probs, 2)
-
-lpm_probs = ggplot( data = lpm_all_probs ) + 
-  geom_histogram( aes( x = lpm.all.probs), binwidth = 0.04, color="darkblue", fill="lightblue") + 
-  xlab("Predicted values") +  ylab("Frequency") + 
-  ggtitle("Linear probability model - test set") +
-  theme_bw() 
-
-lpm_probs = ggplotly( lpm_probs )
-
-# ********** Saving a file ******************* #
-#
-file_name = paste0( folder_plot, "/lpm_probs.Rdata")
-save( lpm_probs, file = file_name)
-#
-# rm(lpm_probs)
-
-
-# Predicted outcomes, threshold optimization
-tresholds<-seq( from = 0, to = 1, by = 0.01)
-
-ROC_lpm = cbind( Model = 'Linear_Probability_Model', 
-                 ROC_analysis( prediction = lpm.all.probs, 
-                               y_true = test.wine_binary$binary_quality,
-                               probability_thresholds = tresholds))
-
-ROC_all = ROC_lpm
-
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++ #
-class_err <- matrix( 0, length( tresholds ), 3)
-for (i in tresholds){
-  lpm.all.class = ifelse(lpm.all.probs > i, 1, 0) #test
-  lpm.all.class_train = ifelse(lpm.all.probs_train > i, 1, 0) #train
-  
-  # confusion matrix
-  
-  table(true = test.wine_binary$binary_quality, predict = lpm.all.class) #test
-  table(true = train.wine_binary$binary_quality, predict = lpm.all.class_train) #train
-  
-  # Total success rate
-  
-  test_err<-mean(lpm.all.class == test.wine_binary$binary_quality) #test
-  train_err<-mean(lpm.all.class_train == train.wine_binary$binary_quality) #train
-  
-  class_err[which(tresholds==i),]<-c(i,test_err,train_err)
-  writeLines(paste0("threshold: ", i))
-  
-  writeLines(paste0("Test error: ",test_err))
-  writeLines(paste0("Train error: ",train_err,"\n"))
-  
-}
-
-class_err<-as.data.frame(class_err)
-names(class_err)<-c("treshold","test accuracy","train accuracy")
-class_err[which.max(class_err[,2]),]
-class_err[which.max(class_err[,3]),]
-
-# > class_err[which.max(class_err[,2]),]
-# treshold test error train error
-# 55     0.54  0.7526667   0.7396438
-# > class_err[which.max(class_err[,3]),]
-# treshold test error train error
-# 52     0.51  0.7513333   0.7442465
-
-best_treshold = class_err[which.max(class_err[,2]),][1] #best test set treshold
-
-##restore best treshold model
-lpm.all.class = ifelse(lpm.all.probs > best_treshold$treshold, 1, 0) #test
-lpm.all.class_train = ifelse(lpm.all.probs_train > best_treshold$treshold, 1, 0) #train
-
-# confusion matrix
-
-# table(true = test.wine_binary$binary_quality, predict = lpm.all.class) #test
-# table(true = train.wine_binary$binary_quality, predict = lpm.all.class_train) #train
-
-# test_error = c(1-mean(lpm.all.class == test.wine_binary$binary_quality))
-# names(test_error)=c("lpm")
-# test_error
-
-
-predob = prediction(lpm.all.probs, test.wine_binary$binary_quality)
-perf = performance(predob, "tpr", "fpr")
-par(mfrow = c(1, 1))
-plot(perf, main = "Linear probability model - test set", colorize = TRUE,
-     print.cutoffs.at = seq(0, 1, by = 0.1), text.adj = c(-0.2, 1.7))
-
-h = perf@y.values[[1]][   head(which(perf@alpha.values[[1]] <= best_treshold$treshold))[1] ]
-abline(h = h,lty=2,col="blueviolet" )
-
-v = perf@x.values[[1]][   head(which(perf@alpha.values[[1]] <= best_treshold$treshold))[1] ]
-abline(v = v, lty = 2, col = "blueviolet" )
-
-auc = c(as.numeric(performance(predob, "auc")@y.values))
-names(auc) = c("lpm")
-auc
-# +++++++++++++++++++++++++++++++++++++++++++++++++++ #
-
-
-
-ROC_matrix_lpm = ROC_analysis( prediction = lpm.all.probs, 
-                               y_true = test.wine_binary$binary_quality, 
-                               probability_thresholds = tresholds)
-ROC_matrix_lpm = data.frame( treshold = ROC_matrix_lpm$probability_thresholds,
-                             FPR = 1-ROC_matrix_lpm$`Specificity: TN/negative`, 
-                             TPR = ROC_matrix_lpm$`Sensitivity (AKA Recall): TP/positive` )
-
-roc_curve_lpm = ggplot(ROC_matrix_lpm, aes(x = FPR, y = TPR, label = treshold)) +
-  geom_line(color = "red") + theme_bw() + 
-  style_roc() + annotate("point", x = v, y = h, colour = "white")+
-  ggtitle( "Linear probability model - test set")
-
-
-roc_curve_lpm = ggplotly( roc_curve_lpm )
-roc_curve_lpm
-
-# ********** Saving a file ******************* #
-
-file_name = paste0( folder_plot, "/lpm_roc_curve.Rdata")
-save( roc_curve_lpm, file = file_name)
-################################################
-
-# plot_interactive_roc( basicplot )
-
-
-
-
-
-# DISCRIMINANT ANALYSIS
-
-## Linear discriminant analysis
-################################################
-# Coefficiente di variazione
-
-coeff_var<-apply( train.wine_binary[, -13 ], 2, CV)
-lda.fit = lda(binary_quality ~ ., data = train.wine_binary)
-
-# Summary of results
-group_means_lda = lda.fit$means
-coeff_lda = round(lda.fit$scaling, 3)
-
-# ---> DA SALVARE? MAGARI INTERPRETARE
-
-#variable importance
-
-group_distances<-sort(abs(diff(lda.fit$means)))
-names(group_distances)<-colnames(diff(lda.fit$means))[as.vector(order((abs(diff(lda.fit$means)))))]
-group_distances
-
-var_importance<-sort(abs(diff(lda.fit$means))/coeff_var)
-names(var_importance)<-colnames(diff(lda.fit$means))[as.vector(order((abs(diff(lda.fit$means))/coeff_var)))]
-var_importance
-
-
-
-var_importance = data.frame( variable = names(var_importance), 
-                             Importance = round( var_importance,2) , 
-                             row.names = 1:length(var_importance) )
-#var_importance[ order(var_importance$Importance)]
-
-lda_importance = ggplot(var_importance, aes( variable, Importance, color = variable)) +
-  geom_bar(  stat = "identity", position='stack') + 
-  ggtitle( "LDA - Variable importance" ) + theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1,  size = 12, hjust = 1))
-
-lda_importance = ggplotly( lda_importance) 
-lda_importance
-
-# ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/lda_importance.Rdata")
-save( lda_importance, file = file_name)
-################################################
-
-
-
-
-# Histograms of discriminant function values by class
-######################################################
-
-plot(lda.fit)
-
-
-# Predict the lda fit on the test sample
-
-lda.pred = predict(lda.fit, newdata = test.wine_binary) #test
-lda.pred1 = predict(lda.fit, newdata = train.wine_binary) #train
-
-hist(lda.pred$x[test.wine_binary$binary_quality==0],xlim = c(-10,10), probability = T,col="red") #bad
-hist(lda.pred$x[test.wine_binary$binary_quality==1],xlim = c(-10,10),add=T,probability = T,col="blue") #good
-
-intersection = (mean(lda.pred1$x[train.wine_binary$binary_quality==0])+
-                mean(lda.pred1$x[train.wine_binary$binary_quality==1]))/2 
-
-
-
-#test sample
-plot(density(lda.pred$x[test.wine_binary$binary_quality==0]),col="red") #bad
-lines(density(lda.pred$x[test.wine_binary$binary_quality==1]),col="blue") #good
-abline(v = intersection,lty = 2, lwd = 2, col = 3)
-
-#train sample
-# plot(density(lda.pred1$x[train.wine_binary$binary_quality==0]),col="red")
-# lines(density(lda.pred1$x[train.wine_binary$binary_quality==1]),col="blue")
-# abline(v = intersection, lty = 2, lwd = 2, col = 'green')
-
-
-# Predict the lda fit on the test sample
-
-lda_pred_bad_ts = data.frame( label = 'bad', prob = lda.pred$x[test.wine_binary$binary_quality==0] )
-lda_pred_good_ts = data.frame( label = 'good', prob = lda.pred$x[test.wine_binary$binary_quality==1] )
-lda_pred_ts = rbind( lda_pred_bad_ts, lda_pred_good_ts )
-
-lda_hist_1_vs_0 = ggplot(lda_pred_ts, aes( x = prob, y = ..density.. )) +
-  geom_histogram(data = subset(lda_pred_ts, label == 'bad'), fill = "red", alpha = 0.2, binwidth = 0.5) +
-  geom_histogram(data = subset(lda_pred_ts, label == 'good'), fill = "blue", alpha = 0.2, binwidth = 0.5) +
-  ggtitle( "Bad vs Good (test set)") 
-
-lda_hist_1_vs_0 = ggplotly( lda_hist_1_vs_0)
-
-
-# ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/lda_hist_1_vs_0.Rdata")
-save( lda_hist_1_vs_0, file = file_name)
-# ******************************************** #
-
-
-
-
-
-lda_line_1_vs_0 = ggplot(lda_pred_ts, aes( x = prob, y = ..density.. )) +
-  geom_density(data = subset(lda_pred_ts, label == 'bad'), fill = "red", alpha = 0.2) +
-  geom_density(data = subset(lda_pred_ts, label == 'good'), fill = "blue", alpha = 0.2) +
-  ggtitle( "Bad vs Good (test set)") + 
-  geom_vline( xintercept = intersection )
-
-lda_line_1_vs_0 = ggplotly( lda_line_1_vs_0 )
-lda_line_1_vs_0
-
-
-# ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/lda_line_1_vs_0.Rdata")
-save( lda_line_1_vs_0, file = file_name)
-################################################
-
-
-
-lda_pred_tr = predict(lda.fit, newdata = train.wine_binary) #train
-
-lda_pred_bad_tr = data.frame( label = 'bad', prob = lda_pred_tr$x[test.wine_binary$binary_quality==0] )
-lda_pred_good_tr = data.frame( label = 'good', prob = lda_pred_tr$x[test.wine_binary$binary_quality==1] )
-lda_pred_tr = rbind( lda_pred_bad_tr, lda_pred_good_tr )
-
-
-
-## TEST SET
-hist( lda_pred_bad_ts$prob, xlim = c(-10,10), probability = T, col = "red") #bad
-hist( lda_pred_good_ts$prob, xlim = c(-10,10), add=T, probability = T, col = "blue") #good
-
-
-
-
-#test sample
-plot(density(lda_pred_bad_ts$prob), col="red") #bad
-lines(density(lda_pred_good_ts$prob),col="blue") #good
-
-intersect = (mean(lda_pred_bad_tr$prob) + mean(lda_pred_good_tr$prob))/2
-abline(v=intersect, lty = 2, lwd=2, col = 3)
-
-
-
-#train sample
-plot(density(lda.pred1$x[train.wine_binary$binary_quality==0]),col="red")
-lines(density(lda.pred1$x[train.wine_binary$binary_quality==1]),col="blue")
-abline(v=(mean(lda.pred1$x[train.wine_binary$binary_quality==0])+
-            mean(lda.pred1$x[train.wine_binary$binary_quality==1]))/2,lty=2,lwd=2, col = 'green')
-
-### plot separation function on training sample
-
-n <- dim(train.wine_binary)[1]
-p <- dim(train.wine_binary)[2]-1 # Subtract 1 because one of the columns specifies the job
-
-# Separate the 2 groups
-good <-train.wine_binary[train.wine_binary$binary_quality==1,-13]
-bad <-train.wine_binary[train.wine_binary$binary_quality==0,-13]
-
-# Need sample statistics
-n_good <- dim(good)[1]
-n_bad <- dim(bad)[1]
-
-# Group mean
-mean.good <- apply(good,2,mean)
-mean.bad <- apply(bad,2,mean)
-
-mean.tot<-(mean.good*n_good+mean.bad*n_bad)/(n_good+n_bad)
-
-# Within group covariance matrices
-S.good <- var(good)
-S.good
-
-S.bad <- var(bad)
-S.bad
-
-W <- ((n_good-1)*S.good + (n_bad-1)*S.bad )/(n_good+n_bad-2)
-W
-
-W.inv <- solve(W)
-
-# Between group covariance
-B<-1/(2-1)*( (n_good*(mean.good-mean.tot)%*% t(mean.good-mean.tot))+ 
-               (n_bad*(mean.bad-mean.tot)%*% t(mean.bad-mean.tot)) )
-B
-
-A<- W.inv %*% B # Calculating the canonical matrix
-
-eigen_res<- eigen(A)
-ifelse(rep(10**(-6),length(eigen_res$values))>Re(eigen_res$values),0,eigen_res$values)
-#just one eigenvalue "different" from zero
-eigen_res$vectors
-
-
-a.vect<-Re(eigen_res$vectors[,1]) #corresponding to the only non-zero eigenvalue
-
-Y<-as.matrix(train.wine_binary[,-13])%*%(a.vect)
-length(Y)
-dim(train.wine_binary)
-
-#PROJECTION ONTO Y
-y.mean.good<-mean.good%*% a.vect
-y.mean.bad<-mean.bad%*% a.vect
-y.mean.good
-y.mean.bad
-
-#Euclidean centroid distance over Y
-dist.groupY<-matrix(0,nrow=nrow(Y),3)
-colnames(dist.groupY)<-c("dist.good","dist.bad","Group")
-for (i in 1:nrow(Y)){
-  dist.good<-sqrt(sum((Y[i,]-y.mean.good)^2)) #Euclidean distance
-  dist.bad<-sqrt(sum((Y[i,]-y.mean.bad)^2)) #Euclidean distance
-  
-  dist.groupY[i,]<-c(dist.good,dist.bad,which.max(c(dist.good,dist.bad))-1)
-}
-
-dist.groupY
-
-#Mahalanobis centroid distance over X
-dist.groupX<-matrix(0,nrow=nrow(Y),3)
-colnames(dist.groupX)<-c("dist.good","dist.bad","Group")
-for (i in 1:nrow(Y)){
-  dist.good<-(Y[i,]-y.mean.good)%*%(t(a.vect)%*%W.inv%*%a.vect)%*%t(Y[i,]-y.mean.good) #mahalanobis distance
-  dist.bad<-(Y[i,]-y.mean.bad)%*%(t(a.vect)%*%W.inv%*%a.vect)%*%t(Y[i,]-y.mean.bad) #mahalanobis distance
-  dist.groupX[i,]<-c(dist.good,dist.bad,which.max(c(dist.good,dist.bad))-1)
-}
-
-dist.groupX
-
-#plot on canonical variable -- real class
-plot(Y,type="n",xlab="Index",ylab="First Canonical variable",xlim=c(0,max(n_good,n_bad)))
-points(Y[train.wine_binary[,13]==1,],pch=21,col="green")
-points(Y[train.wine_binary[,13]==0,],pch=24,col="red")
-abline(h=y.mean.good,col="blue",lty=2,lwd=2)
-abline(h=y.mean.bad,col="yellow",lty=2,lwd=2)
-abline(h=(y.mean.good+y.mean.bad)/2,col="black",lty=2,lwd=2) #linear separation
-
-
-legend("bottomright",c("Good","Bad"),col=c("green","red"),pch=c(21,24))
-
-#plot on canonical variable -- predicted class
-plot(Y,type="n",xlab="Index",ylab="First Canonical variable",xlim=c(0,max(n_good,n_bad)))
-points(Y[dist.groupY[,3]==1,],pch=21,col="green")
-points(Y[dist.groupY[,3]==0,],pch=24,col="red")
-abline(h=(y.mean.good+y.mean.bad)/2,col="black",lty=2,lwd=2) #linear separation
-
-
-hist(Y[which(train.wine_binary[,13]==1),],pch=21,col="green",bg="green")
-hist(Y[which(train.wine_binary[,13]==0),],pch=24,col="red",bg="red",add=T)
-abline(v=(y.mean.good+y.mean.bad)/2,col="black",lty=2,lwd=2) #linear separation
-
-
-
-density.good<-density(Y[train.wine_binary[,13]==1,])
-density.bad<-density(Y[train.wine_binary[,13]==0,])
-
-plot(density.good,col="green",bg="green",ylim=c(0,max(density.good$y,density.bad$y)))
-lines(density(Y[train.wine_binary[,13]==0,]),col="red",bg="red")
-abline(v=(y.mean.good+y.mean.bad)/2,col="black",lty=2,lwd=2) #linear separation
-
-###comparing results with lda
-psi<-t(a.vect)%*%W%*%a.vect
-a.vect%*%(solve(psi)^(1/2))
-
-#the other way around
-coef(lda.fit)%*%solve(solve(psi)^(1/2))
-
-# Test set confusion matrix
-table(true = test.wine_binary$binary_quality, predict = lda.pred$class)
-
-# Total success rate
-
-mean(lda.pred$class == test.wine_binary$binary_quality)
-
-test_error = c(test_error, 1-mean(lda.pred$class == test.wine_binary$binary_quality))
-names(test_error)[2]="lda"
-test_error
-
-# That's not bad, but notice the low sensitivity of this model.
-# Test set ROC curve and AUC
-
-predob = prediction(lda.pred$posterior[, 2], test.wine_binary$binary_quality)
-perf = performance(predob, "tpr", "fpr")
-par(mfrow = c(1, 2))
-plot(perf, main = "Linear Discriminant Analysis - test set", colorize = TRUE,
-     print.cutoffs.at = seq(0, 1, by = 0.1), text.adj = c(-0.2, 1.7))
-auc = c(auc, as.numeric(performance(predob, "auc")@y.values))
-names(auc)[2] = "lda"
-auc
-################################################
-
-
-
 
 ## Quadratic discriminant analysis
+###################################
 # Fit the model on the training sample 
 
 qda.fit = qda(binary_quality ~ ., data = train.wine_binary)
@@ -474,13 +31,13 @@ qda.fit
 
 #variable importance
 
-group_distances<-sort(abs(diff(qda.fit$means)))
-names(group_distances)<-colnames(diff(qda.fit$means))[as.vector(order((abs(diff(qda.fit$means)))))]
-group_distances
-
-var_importance<-sort(abs(diff(qda.fit$means))/coeff_var)
-names(var_importance)<-colnames(diff(qda.fit$means))[as.vector(order((abs(diff(qda.fit$means))/coeff_var)))]
-var_importance
+# group_distances<-sort(abs(diff(qda.fit$means)))
+# names(group_distances)<-colnames(diff(qda.fit$means))[as.vector(order((abs(diff(qda.fit$means)))))]
+# group_distances
+# 
+# var_importance<-sort(abs(diff(qda.fit$means))/coeff_var)
+# names(var_importance)<-colnames(diff(qda.fit$means))[as.vector(order((abs(diff(qda.fit$means))/coeff_var)))]
+# var_importance
 
 
 # Predict the qda fit on the test sample
@@ -510,7 +67,48 @@ names(auc)[3] = "qda"
 auc
 
 
+
+
+tresholds<-seq( from = 0, to = 1, by = 0.01)
+
+ROC_qda = cbind( Model = 'Quadratic_Discriminant_Analysis', 
+                 ROC_analysis( prediction = qda.pred$posterior[,2], 
+                               y_true = test.wine_binary$binary_quality,
+                               probability_thresholds = tresholds))
+
+ROC_all = rbind( ROC_all, ROC_qda )
+
+
+
+ROC_matrix_qda = ROC_analysis( prediction = qda.pred$posterior[,2], 
+                               y_true = test.wine_binary$binary_quality, 
+                               probability_thresholds = tresholds)
+
+ROC_matrix_qda = data.frame( treshold = ROC_matrix_qda$probability_thresholds,
+                             FPR = 1-ROC_matrix_qda$`Specificity: TN/negative`, 
+                             TPR = ROC_matrix_qda$`Sensitivity (AKA Recall): TP/positive` )
+
+roc_curve_qda = ggplot(ROC_matrix_qda, aes(x = FPR, y = TPR, label = treshold)) +
+                geom_line(color = "yellow") + theme_bw() + 
+                style_roc() + #annotate("point", x = v, y = h, colour = "white")+
+                ggtitle( "Quadratic discriminant analysis - test set")
+
+
+roc_curve_qda = ggplotly( roc_curve_qda )
+roc_curve_qda
+
+# ********** Saving file ******************* #
+file_name = paste0( folder_plot, "/qda_roc_curve.Rdata")
+save( roc_curve_qda, file = file_name)
+################################################
+
+rm(list=setdiff(ls(), c("test_error", 'ROC_all')))
+
+
+
+
 # LOGISTIC REGRESSION -----------------------------------------------------
+###########################################################
 
 train.wine_binary$binary_quality <- as.factor(train.wine_binary$binary_quality)
 test.wine_binary$binary_quality <- as.factor(test.wine_binary$binary_quality)
@@ -545,6 +143,44 @@ plot(perf, main = "Logistic Regression -  test set", colorize = TRUE,
 auc = c(auc, as.numeric(performance(predob, "auc")@y.values))
 names(auc)[4] = "logreg"
 auc
+
+
+
+
+tresholds<-seq( from = 0, to = 1, by = 0.01)
+
+ROC_log = cbind( Model = 'Logistic_Regression', 
+                 ROC_analysis( prediction = glm.probs, 
+                               y_true = test.wine_binary$binary_quality,
+                               probability_thresholds = tresholds))
+
+ROC_all = rbind( ROC_all, ROC_log )
+
+
+
+ROC_matrix_log = ROC_analysis( prediction = glm.probs, 
+                               y_true = test.wine_binary$binary_quality, 
+                               probability_thresholds = tresholds)
+
+ROC_matrix_log = data.frame( treshold = ROC_matrix_log$probability_thresholds,
+                             FPR = 1-ROC_matrix_log$`Specificity: TN/negative`, 
+                             TPR = ROC_matrix_log$`Sensitivity (AKA Recall): TP/positive` )
+
+roc_curve_log = ggplot(ROC_matrix_log, aes(x = FPR, y = TPR, label = treshold)) +
+  geom_line(color = 15) + theme_bw() + 
+  style_roc() + #annotate("point", x = v, y = h, colour = "white")+
+  ggtitle( "Logistic Regression - test set")
+
+
+roc_curve_log = ggplotly( roc_curve_log )
+roc_curve_log
+
+# ********** Saving file ******************* #
+file_name = paste0( folder_plot, "/log_roc_curve.Rdata")
+save( roc_curve_log, file = file_name)
+################################################
+
+rm(list=setdiff(ls(), c("test_error", 'ROC_all')))
 
 
 # REGULARIZED LOGISTIC REGRESSION -------------------------------------------
