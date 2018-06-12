@@ -33,15 +33,6 @@ qda.fit = qda(binary_quality ~ ., data = train.wine_binary)
 
 qda.fit
 
-#variable importance
-
-# group_distances<-sort(abs(diff(qda.fit$means)))
-# names(group_distances)<-colnames(diff(qda.fit$means))[as.vector(order((abs(diff(qda.fit$means)))))]
-# group_distances
-# 
-# var_importance<-sort(abs(diff(qda.fit$means))/coeff_var)
-# names(var_importance)<-colnames(diff(qda.fit$means))[as.vector(order((abs(diff(qda.fit$means))/coeff_var)))]
-# var_importance
 
 
 # Predict the qda fit on the test sample
@@ -304,35 +295,35 @@ auc
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
 
-ROC_ = cbind( Model = 'Regularized_Logistic_Regression', 
+ROC_lasso = cbind( Model = 'Regularized_Logistic_Regression (Lasso)', 
                    ROC_analysis( prediction = predob@predictions[[1]], 
                                  y_true = test.wine_binary$binary_quality,
                                  probability_thresholds = tresholds))
 
-ROC_all = rbind( ROC_all, ROC_ridge )
+ROC_all = rbind( ROC_all, ROC_lasso )
 
 
 
-ROC_matrix_ridge = ROC_analysis( prediction = predob@predictions[[1]], 
+ROC_matrix_lasso = ROC_analysis( prediction = predob@predictions[[1]], 
                                  y_true = test.wine_binary$binary_quality, 
                                  probability_thresholds = tresholds)
 
-ROC_matrix_ridge = data.frame( treshold = ROC_matrix_ridge$probability_thresholds,
-                               FPR = 1-ROC_matrix_ridge$`Specificity: TN/negative`, 
-                               TPR = ROC_matrix_ridge$`Sensitivity (AKA Recall): TP/positive` )
+ROC_matrix_lasso = data.frame( treshold = ROC_matrix_lasso$probability_thresholds,
+                               FPR = 1-ROC_matrix_lasso$`Specificity: TN/negative`, 
+                               TPR = ROC_matrix_lasso$`Sensitivity (AKA Recall): TP/positive` )
 
-roc_curve_ridge = ggplot(ROC_matrix_ridge, aes(x = FPR, y = TPR, label = treshold)) +
+roc_curve_lasso = ggplot(ROC_matrix_lasso, aes(x = FPR, y = TPR, label = treshold)) +
   geom_line(color = 15) + theme_bw() + 
   style_roc() + #annotate("point", x = v, y = h, colour = "white")+
-  ggtitle( "Logistic Regression - test set")
+  ggtitle( "Logistic Regression (Lasso) - test set")
 
 
-roc_curve_ridge = ggplotly( roc_curve_ridge )
-roc_curve_ridge
+roc_curve_lasso = ggplotly( roc_curve_lasso )
+roc_curve_lasso
 
 # ********** Saving file ******************* #
-file_name = paste0( folder_plot, "/ridge_roc_curve.Rdata")
-save( roc_curve_ridge, file = file_name)
+file_name = paste0( folder_plot, "/lasso_roc_curve.Rdata")
+save( roc_curve_lasso, file = file_name)
 ################################################
 
 #rm(list=setdiff(ls(), c("test_error", 'ROC_all')))
@@ -625,7 +616,31 @@ save( roc_curve_knn, file = file_name)
 ################################################
 
 
+tapply( X = ROC_all$`Accuracy: true/total`,
+        INDEX = ROC_all$Model, FUN = max )
+
+ROC_all$FPR = ROC_all$`(y=0,y_hat=1) FP`/(ROC_all$`(y=0,y_hat=0) TN`+ROC_all$`(y=0,y_hat=1) FP`)
+ROC_all$TPR = ROC_all$`Sensitivity (AKA Recall): TP/positive`
 
 
+roc_curve_all = ggplot( ROC_all, aes(x = FPR, y = TPR, label = probability_thresholds), alpha = 0.2) +
+                geom_line(data = subset(ROC_all, Model == 'Linear_Probability_Model'), col = 2) +
+                geom_line(data = subset(ROC_all, Model == 'Linear_Discriminant_Analysis'), col = 3) +
+                geom_line(data = subset(ROC_all, Model == 'Quadratic_Discriminant_Analysis'), col = 4) +
+                geom_line(data = subset(ROC_all, Model == 'Logistic_Regression'), col = 5) +
+                geom_line(data = subset(ROC_all, Model == 'Regularized_Logistic_Regression'), col = 6) +
+                geom_line(data = subset(ROC_all, Model == 'Regularized_Logistic_Regression (Lasso)'), col = 7) +
+                geom_line(data = subset(ROC_all, Model == 'k nearest neighbor'), col = 8) +
+                ggtitle( "ROC ANALYSIS ALL")  +
+                style_roc()
+
+
+roc_curve_all = ggplotly( roc_curve_all )
+roc_curve_all
+
+# ********** Saving file ******************* #
+file_name = paste0( folder_plot, "/roc_curve_all.Rdata")
+save( roc_curve_all, file = file_name)
+################################################
 
 
