@@ -1,13 +1,37 @@
+### ***** IMPORT ***** ###
+##########################
+# source( '072_Modeling_lpm.R') # REQUIRE SEED
+# source( '074_Modeling_lda.R') # REQUIRE SEED
+
+
+
+source( 'Utils.R')
+SEED = 12344321
+source( '020_Pre_processing.R') # REQUIRE SEED
+
+
+
+### ***** SAVING FOLDER ***** ###
+
+folder = "results/MODELING/REGRESSION"
+dir.create( folder )
+
+folder_plot = paste0( folder, "/plots")
+dir.create( folder_plot )
+
+##################################
+
+
+
+
+
+
 # MULTIPLE REGRESSION: RESPONSE = ALCOHOL ------------------------------------------
 
 linreg = lm(alcohol ~ ., data = train.wine)
 
 summary(linreg)
 
-if (!require(car)) {
-  install.packages("car")
-  library(car)
-}
 
 # significance test: exclude total.sulfur.dioxide
 linearHypothesis(model = linreg,

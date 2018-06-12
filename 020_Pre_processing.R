@@ -20,6 +20,7 @@ ensureLibrary('plotROC')
 ensureLibrary('corrplot')
 ensureLibrary("GGally")
 ensureLibrary('ggcorrplot')
+ensureLibrary('car')
 
 
 
