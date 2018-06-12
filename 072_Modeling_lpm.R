@@ -9,7 +9,7 @@ source( '020_Pre_processing.R') # REQUIRE SEED
 
 ### ***** SAVING FOLDER ***** ###
 
-folder = "results/MODELING"
+folder = "results/MODELING/CLASSIFICATION"
 dir.create( folder )
 
 folder_plot = paste0( folder, "/plots")

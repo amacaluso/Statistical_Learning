@@ -11,7 +11,7 @@ source( '020_Pre_processing.R') # REQUIRE SEED
 
 ### ***** SAVING FOLDER ***** ###
 
-folder = "results/MODELING"
+folder = "results/MODELING/CLASSIFICATION"
 dir.create( folder )
 
 folder_plot = paste0( folder, "/plots")
@@ -163,8 +163,8 @@ mean.tot<-(mean.good*n_good+mean.bad*n_bad)/(n_good+n_bad)
 # Within group covariance matrices
 
 corr_matrix = cor(wine[, 1:12])
-corrplot(corr_matrix, method="color")
-corrplot = ggplotly( ggcorrplot(S.good, hc.order = TRUE,
+corr_plot = corrplot(corr_matrix, method="color")
+corrplot = ggplotly( ggcorrplot(corr_matrix, hc.order = TRUE,
                                 outline.col = "white",
                                 #ggtheme = ggplot2::theme_gray,
                                 colors = c("#6D9EC1", "white", "#E46726")))
@@ -301,11 +301,11 @@ abline(v=(y.mean.good+y.mean.bad)/2,col="black",lty=2,lwd=2) #linear separation
 
 pred_bad = data.frame( label = 'bad', prob = Y[which(train.wine_binary[,13]==1),] )
 pred_good = data.frame( label = 'good', prob = Y[which(train.wine_binary[,13]==0),] )
-pred = rbind( canonical_pred_bad, canonical_pred_good )
+pred = rbind( pred_bad, pred_good )
 
-lda_hist = ggplot(lda_pred_ts, aes( x = prob, y = ..density.. )) +
-           geom_histogram(data = subset(lda_pred_ts, label == 'bad'), fill = "green", alpha = 0.2, binwidth = 0.5) +
-           geom_histogram(data = subset(lda_pred_ts, label == 'good'), fill = "red", alpha = 0.2, binwidth = 0.5) +
+lda_hist = ggplot(pred, aes( x = prob, y = ..density.. )) +
+           geom_histogram(data = subset(pred, label == 'bad'), fill = "green", alpha = 0.2, binwidth = 0.5) +
+           geom_histogram(data = subset(pred, label == 'good'), fill = "red", alpha = 0.2, binwidth = 0.5) +
            ggtitle( "Bad vs Good") 
 
 lda_hist = ggplotly( lda_hist )

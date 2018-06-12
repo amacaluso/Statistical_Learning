@@ -57,3 +57,6 @@ train.wine = wine[train.label, ]
 
 test.wine_binary = wine_binary[!train.label,]
 test.wine = wine[!train.label,]
+
+
+
