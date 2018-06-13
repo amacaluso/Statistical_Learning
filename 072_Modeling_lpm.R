@@ -14,7 +14,6 @@ dir.create( folder )
 
 folder_plot = paste0( folder, "/plots")
 dir.create( folder_plot )
-
 ##################################
 
 

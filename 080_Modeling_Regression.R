@@ -3,77 +3,47 @@
 # source( '072_Modeling_lpm.R') # REQUIRE SEED
 # source( '074_Modeling_lda.R') # REQUIRE SEED
 
-
-
 source( 'Utils.R')
 SEED = 12344321
 source( '020_Pre_processing.R') # REQUIRE SEED
 
 
+X = remove_columns_by_names(df = train.wine, colNames = 'alcohol')
+Y = train.wine$alcohol
 
-### ***** SAVING FOLDER ***** ###
-
-folder = "results/MODELING/REGRESSION"
-dir.create( folder )
-
-folder_plot = paste0( folder, "/plots")
-dir.create( folder_plot )
-
-##################################
-
-
-
+X_test = remove_columns_by_names(df = test.wine, colNames = 'alcohol')
+Y_test = test.wine$alcohol
 
 
 
 # MULTIPLE REGRESSION: RESPONSE = ALCOHOL ------------------------------------------
 
-linreg = lm(alcohol ~ ., data = train.wine)
+linear_reg = lm( Y  ~ ., data = X)
+linear_reg_summary = as.data.frame( round( summary( linear_reg )$coefficients, 2))
 
-summary(linreg)
 
 
-# significance test: exclude total.sulfur.dioxide
-linearHypothesis(model = linreg,
-                 hypothesis.matrix = c("total.sulfur.dioxide = 0"), test = "F")
 
-# train set error
+linear_reg = lm( Y  ~ ., data = X)
 
-MSPE.train.lm = mean((linreg$residuals)^2)
+linear_reg_summary = as.data.frame( round( summary( linear_reg )$coefficients, 2))
+save_table(df = linear_reg_summary )
 
-# Prediction error of the naive estimator (training set alcohol mean)
+lm_pred_train = predict(object = linear_reg, newdata = train.wine)
+evaluation_model( target_variable = Y, prediction = lm_pred_train, MODEL = 'Multiple Regression (train)' )
 
-MSPE.test.naive = mean((test.wine$alcohol-mean(train.wine$alcohol))^2)
+lm_pred_test = predict(object = linear_reg, newdata = test.wine)
+evaluation_model( target_variable = Y_test, prediction = lm_pred_test, MODEL = 'Multiple Regression (test)' )
 
-MSPE.train.lm
-MSPE.test.naive
-
-# Predictions and test set error
-
-pred = predict(object = linreg, newdata = test.wine)
-MSPE = c(mean((test.wine$alcohol-pred)^2))
-names(MSPE) = c("lm")
-
-# > MSPE
-# train.lm   test.lm    test.0 
-# 0.2119810 0.2948535 1.4100943 
 
 
 # Feature selection -------------------------------------------------------
 
-# Load the 'leaps' package
-if (!require(leaps)){
-  install.packages("leaps", repos="http://cran.rstudio.com/")
-  library(leaps)
-}
-
 ## Best subset selection
-
-fit = regsubsets(alcohol ~ ., data = train.wine, nvmax = ncol(train.wine)-1)
+fit = regsubsets(Y ~ ., data = X, nvmax = ncol(X))
 fit.summary = summary(fit)
 
 # Summary of results
-
 fit.summary
 
 # non-nested models: fixed.acidity in model with two regressors but not with three (back again in 4)
@@ -85,9 +55,10 @@ names(fit.summary)
 # Plot the RSS vs. the number of variables (this is similar 
 # to the red line in fig. 3.5)
 
-plot_subset_error<-function(model.summary){
-  
-  par(mfrow=c(1,3))
+#plot_subset_error<-function(model.summary){
+
+  model.summary = fit.summary
+  par(mfrow=c(1,1))
   plot(model.summary$rss, 
        xlab = "Number of Variables", ylab = "RSS",
        main = "Residual Sum of Squares",
@@ -105,7 +76,39 @@ plot_subset_error<-function(model.summary){
   
   points(imin, model.summary$rss[imin], pch = 17, col = "darkgoldenrod2", cex=2)
   
-  # Plot BIC vs. the number of variables
+df_rss = data.frame( index = 1:length( model.summary$rss ), RSS = model.summary$rss )
+df_bic = data.frame( index = 1:length( model.summary$bic ), BIC = model.summary$bic )
+df_cp = data.frame( index = 1:length( model.summary$cp ), CP = model.summary$cp )
+
+plt_rss = ggplot( data = df_rss, aes( x = index, y = RSS) ) + 
+          geom_line( col = 'red') + 
+          geom_point( col = 'red') +  xlab("Number of Variables") + ylab ( "RSS") + 
+          ggtitle( "Residual Sum of Squares") + 
+          geom_point
+
+
+plt_bic = ggplot( data = df_bic, aes( x = index, y = BIC) ) + 
+          geom_line( col = 'red') + 
+          geom_point( col = 'red') +  xlab("Number of Variables") + ylab ( "BIC") + 
+          ggtitle( "BIC" )
+
+
+plt_cp = ggplot( data = df_cp, aes( x = index, y = CP) ) + 
+         geom_line( col = 'red') + 
+         geom_point( col = 'red') +  xlab("Number of Variables") + ylab ( "CP") + 
+         ggtitle( "CP")
+
+  
+plt_rss = ggplotly( plt_rss )
+plt_bic = ggplotly( plt_bic )
+plt_cp = ggplotly( plt_cp )
+
+subplot( list( plt_rss, plt_bic, plt_cp) , titleX = F ) %>% 
+  layout(title = "RSS vs BIC vs CP")
+
+  
+  
+# Plot BIC vs. the number of variables
   
   plot(model.summary$bic, xlab = "Number of Variables", ylab = "BIC",
        main = "BIC",
@@ -134,8 +137,8 @@ plot_subset_error<-function(model.summary){
   
   points(imin, model.summary$cp[imin], pch = 17, col = "blue", cex=2)
   
-  return (imin) #according to Mallow's CP
-}
+#   return (imin) #according to Mallow's CP
+# }
 
 # Another plot, based on a plot method for the 'regsubsets' object, 
 # provides a visual description of the recursive structure of 
@@ -146,7 +149,7 @@ plot_subset_error<-function(model.summary){
 
 # Here are the coefficients of the best model
 
-coef(fit, imin)
+coef(fit)
 
 # The best subset regression drops 'total.sulfur.dioxide' only. Let's compute
 # its test set MSPE

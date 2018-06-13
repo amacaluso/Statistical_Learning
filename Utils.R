@@ -11,10 +11,10 @@ ensureLibrary = function(packageName) {
 
 evaluation_model = function( target_variable, prediction, MODEL)
 {
-  # target_variable = y
-  # prediction = y_hat
+  # target_variable = Y
+  # prediction = lm_pred_train
   # MODEL = model
-  
+  n = length( target_variable)
   VARIANCE = sum(( target_variable - mean( target_variable ))^2 ) / n
   MSE = sum((target_variable - prediction)^2 ) / n
   RSE = MSE / VARIANCE
@@ -31,7 +31,7 @@ evaluation_model = function( target_variable, prediction, MODEL)
 
 load_and_update_metrics = function( MODEL = NA,
                                     METRICS = NA, 
-                                    path = "data/metrics_data.Rdata" )
+                                    path = "results/MODELING/REGRESSION/metrics_data.Rdata" )
 {
   
   # METRICS = results
@@ -206,3 +206,35 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL)
 CV<-function(x){
   sd(x)/abs(mean(x))
 }
+
+
+
+
+save_table = function( df, type = 'REGRESSION')
+{
+#  df = linear_reg_summary
+  name_file = deparse(substitute(df))
+  PATH = paste0( "results/MODELING/", type, "/", name_file,".Rdata")
+  save( linear_reg_summary, file = PATH)
+
+  }
+#
+
+
+
+save_plot = function( plot, type = 'REGRESSION')
+{
+  #  df = linear_reg_summary
+  name_file = deparse(substitute(plot))
+  PATH = paste0( "results/MODELING/", type, "/plots/", name_file,".Rdata")
+  save( plot, file = PATH)
+  
+}
+
+
+
+
+
+
+
+
