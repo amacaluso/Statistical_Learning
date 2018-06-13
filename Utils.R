@@ -233,6 +233,57 @@ save_plot = function( plot, type = 'REGRESSION')
 
 
 
+plot_subset_error<-function(model.summary){
+  
+  par(mfrow=c(1,3))
+  plot(model.summary$rss, 
+       xlab = "Number of Variables", ylab = "RSS",
+       main = "Residual Sum of Squares",
+       col = "red", type = "b", pch = 16)
+  
+  imin = which.min(model.summary$rss)
+  imin
+  
+  # Add a marker for the suggested number of variables
+  points(imin, model.summary$rss[imin], pch = 17, col = "blue", cex=2)
+  
+  # Add the marker also according to adjusted R^2
+  imin = which.min(model.summary$adjr2)
+  imin
+  
+  points(imin, model.summary$rss[imin], pch = 17, col = "darkgoldenrod2", cex=2)
+  
+  # Plot BIC vs. the number of variables
+  
+  plot(model.summary$bic, xlab = "Number of Variables", ylab = "BIC",
+       main = "BIC",
+       col = "red", type = "b", pch = 16)
+  
+  imin = which.min(model.summary$bic)
+  imin
+  
+  # Add a marker for the suggested number of variables
+  points(imin, model.summary$bic[imin], pch = 17, col = "blue", cex=2)
+  
+  # Plot Mallow's Cp vs. the number of variables, and find 
+  # the best specification
+  
+  plot(model.summary$cp, xlab = "Number of Variables", ylab = "Cp",
+       main = "Mallow's CP",
+       col = "red", type = "b", pch = 16)
+  
+  # Find the minimum 
+  
+  imin = which.min(model.summary$cp)
+  imin
+  
+  # The best subset regression contains 11 variables plus 
+  # the intercept. Add a point to the plot to highlight the minimum
+  
+  points(imin, model.summary$cp[imin], pch = 17, col = "blue", cex=2)
+  
+  return (imin) #according to Mallow's CP
+}
 
 
 

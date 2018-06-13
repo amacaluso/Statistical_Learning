@@ -17,12 +17,7 @@ Y_test = test.wine$alcohol
 
 
 # MULTIPLE REGRESSION: RESPONSE = ALCOHOL ------------------------------------------
-
-linear_reg = lm( Y  ~ ., data = X)
-linear_reg_summary = as.data.frame( round( summary( linear_reg )$coefficients, 2))
-
-
-
+################################################
 
 linear_reg = lm( Y  ~ ., data = X)
 
@@ -37,45 +32,24 @@ evaluation_model( target_variable = Y_test, prediction = lm_pred_test, MODEL = '
 
 
 
-# Feature selection -------------------------------------------------------
+# +++++++++++++++ Feature selection +++++++++++++ #
 
 ## Best subset selection
 fit = regsubsets(Y ~ ., data = X, nvmax = ncol(X))
 fit.summary = summary(fit)
 
-# Summary of results
-fit.summary
-
 # non-nested models: fixed.acidity in model with two regressors but not with three (back again in 4)
-
 names(fit.summary)
-
-
 
 # Plot the RSS vs. the number of variables (this is similar 
 # to the red line in fig. 3.5)
 
 #plot_subset_error<-function(model.summary){
 
-  model.summary = fit.summary
-  par(mfrow=c(1,1))
-  plot(model.summary$rss, 
-       xlab = "Number of Variables", ylab = "RSS",
-       main = "Residual Sum of Squares",
-       col = "red", type = "b", pch = 16)
-  
-  imin = which.min(model.summary$rss)
-  imin
-  
-  # Add a marker for the suggested number of variables
-  points(imin, model.summary$rss[imin], pch = 17, col = "blue", cex=2)
-  
-  # Add the marker also according to adjusted R^2
-  imin = which.min(model.summary$adjr2)
-  imin
-  
-  points(imin, model.summary$rss[imin], pch = 17, col = "darkgoldenrod2", cex=2)
-  
+model.summary = fit.summary
+
+
+
 df_rss = data.frame( index = 1:length( model.summary$rss ), RSS = model.summary$rss )
 df_bic = data.frame( index = 1:length( model.summary$bic ), BIC = model.summary$bic )
 df_cp = data.frame( index = 1:length( model.summary$cp ), CP = model.summary$cp )
@@ -83,62 +57,33 @@ df_cp = data.frame( index = 1:length( model.summary$cp ), CP = model.summary$cp 
 plt_rss = ggplot( data = df_rss, aes( x = index, y = RSS) ) + 
           geom_line( col = 'red') + 
           geom_point( col = 'red') +  xlab("Number of Variables") + ylab ( "RSS") + 
-          ggtitle( "Residual Sum of Squares") + 
-          geom_point
+          geom_point( aes( x = which.min( df_rss$RSS), y = df_rss$RSS[ which.min( df_rss$RSS)]),
+                           col = 'blue', size = 3)
 
 
 plt_bic = ggplot( data = df_bic, aes( x = index, y = BIC) ) + 
           geom_line( col = 'red') + 
           geom_point( col = 'red') +  xlab("Number of Variables") + ylab ( "BIC") + 
-          ggtitle( "BIC" )
+          geom_point( aes( x = which.min( df_bic$BIC), y = df_bic$BIC[ which.min( df_bic$BIC)]),
+                      col = 'blue', size = 3)
+
 
 
 plt_cp = ggplot( data = df_cp, aes( x = index, y = CP) ) + 
          geom_line( col = 'red') + 
          geom_point( col = 'red') +  xlab("Number of Variables") + ylab ( "CP") + 
-         ggtitle( "CP")
+         geom_point( aes( x = which.min( df_cp$CP), y = df_cp$CP[ which.min( df_cp$CP)]),
+                           col = 'blue', size = 3)
 
   
 plt_rss = ggplotly( plt_rss )
 plt_bic = ggplotly( plt_bic )
 plt_cp = ggplotly( plt_cp )
 
-subplot( list( plt_rss, plt_bic, plt_cp) , titleX = F ) %>% 
-  layout(title = "RSS vs BIC vs CP")
+
+subplot( list( plt_rss, plt_bic, plt_cp) , titleX = F ) %>% layout(title = "RSS vs BIC vs CP")
 
   
-  
-# Plot BIC vs. the number of variables
-  
-  plot(model.summary$bic, xlab = "Number of Variables", ylab = "BIC",
-       main = "BIC",
-       col = "red", type = "b", pch = 16)
-  
-  imin = which.min(model.summary$bic)
-  imin
-  
-  # Add a marker for the suggested number of variables
-  points(imin, model.summary$bic[imin], pch = 17, col = "blue", cex=2)
-  
-  # Plot Mallow's Cp vs. the number of variables, and find 
-  # the best specification
-  
-  plot(model.summary$cp, xlab = "Number of Variables", ylab = "Cp",
-       main = "Mallow's CP",
-       col = "red", type = "b", pch = 16)
-  
-  # Find the minimum 
-  
-  imin = which.min(model.summary$cp)
-  imin
-  
-  # The best subset regression contains 11 variables plus 
-  # the intercept. Add a point to the plot to highlight the minimum
-  
-  points(imin, model.summary$cp[imin], pch = 17, col = "blue", cex=2)
-  
-#   return (imin) #according to Mallow's CP
-# }
 
 # Another plot, based on a plot method for the 'regsubsets' object, 
 # provides a visual description of the recursive structure of 
@@ -149,26 +94,28 @@ subplot( list( plt_rss, plt_bic, plt_cp) , titleX = F ) %>%
 
 # Here are the coefficients of the best model
 
-coef(fit)
 
 # The best subset regression drops 'total.sulfur.dioxide' only. Let's compute
 # its test set MSPE
 # lm(alcohol ~ . -citric.acid - chlorides - free.sulfur.dioxide - total.sulfur.dioxide, data = train.wine), newdata = test.wine)
 
+imin = which.min(model.summary$cp)
+
 response<-colnames(test.wine)[11]
-regressors<-names(fit.summary$which[imin,fit.summary$which[imin,]==T])[-1]
+regressors <- names( fit.summary$which[imin,fit.summary$which[imin,]==T])[-1]
+
 best_formula<-as.formula(paste(response," ~ ",paste(regressors,collapse=" + ")))
 best_model<-lm(best_formula, data = train.wine)
 
-pred = predict(best_model, newdata = test.wine)
+lm_sub_pred = predict(best_model, newdata = test.wine)
 
-MSPE = c(MSPE, mean((test.wine$alcohol-pred)^2))
-names(MSPE)[2] = "BSS"
-MSPE
+evaluation_model( target_variable = Y_test, prediction = lm_sub_pred, MODEL = 'Multiple Regression (BSS)' )
+
+
 
 ## Forward Stepwise Selection
 
-fit = regsubsets(alcohol ~ ., data = train.wine, method = "forward",nvmax = ncol(train.wine)-1)
+fit = regsubsets(Y ~ ., data = X, method = "forward", nvmax = ncol(X))
 fit.summary<-summary(fit)
 
 imin<-plot_subset_error(fit.summary)
@@ -176,10 +123,6 @@ imin<-plot_subset_error(fit.summary)
 # CV using the 'caret' package
 # Info at http://topepo.github.io/caret/index.html
 
-if (!require(caret)){
-  install.packages("caret")
-  library(caret)
-}
 
 # We consider LOOCV, repeated one
 
@@ -207,10 +150,9 @@ CV.fit$results
 
 # Plot the output
 # Automatic plot
+df = data.frame( n_var = CV.fit$results$nvmax, RMSE = CV.fit$results$RMSE)
 
-plot(CV.fit)
-
-# Manual plot (similar to fig. 3.7)
+ggplot( data = df, aes( x = n_var, y = RMSE)) + geom_line(col = "blue") + geom_point( col = 5)
 
 par(mfrow=c(1,1))
 k = CV.fit$results$nvmax
