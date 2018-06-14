@@ -16,9 +16,6 @@ source( '020_Pre_processing.R') # REQUIRE SEED
 folder = "results/MODELING/CLASSIFICATION"
 dir.create( folder )
 
-folder_plot = paste0( folder, "/plots")
-dir.create( folder_plot )
-
 ##################################
 
 
@@ -102,7 +99,7 @@ roc_curve_qda = ggplotly( roc_curve_qda )
 roc_curve_qda
 
 # ********** Saving file ******************* #
-file_name = paste0( folder_plot, "/qda_roc_curve.Rdata")
+file_name = paste0( folder, "/qda_roc_curve.Rdata")
 save( roc_curve_qda, file = file_name)
 ################################################
 
@@ -180,7 +177,7 @@ roc_curve_log = ggplotly( roc_curve_log )
 roc_curve_log
 
 # ********** Saving file ******************* #
-file_name = paste0( folder_plot, "/log_roc_curve.Rdata")
+file_name = paste0( folder, "/log_roc_curve.Rdata")
 save( roc_curve_log, file = file_name)
 ################################################
 
@@ -264,7 +261,7 @@ roc_curve_ridge = ggplotly( roc_curve_ridge )
 roc_curve_ridge
 
 # ********** Saving file ******************* #
-file_name = paste0( folder_plot, "/ridge_roc_curve.Rdata")
+file_name = paste0( folder, "/ridge_roc_curve.Rdata")
 save( roc_curve_ridge, file = file_name)
 ################################################
 
@@ -331,7 +328,7 @@ roc_curve_ridge = ggplotly( roc_curve_ridge )
 roc_curve_ridge
 
 # ********** Saving file ******************* #
-file_name = paste0( folder_plot, "/ridge_roc_curve.Rdata")
+file_name = paste0( folder, "/ridge_roc_curve.Rdata")
 save( roc_curve_ridge, file = file_name)
 ################################################
 
@@ -620,12 +617,41 @@ roc_curve_knn = ggplotly( roc_curve_knn )
 roc_curve_knn
 
 # ********** Saving file ******************* #
-file_name = paste0( folder_plot, "/knn_roc_curve.Rdata")
+file_name = paste0( folder, "/knn_roc_curve.Rdata")
 save( roc_curve_knn, file = file_name)
 ################################################
 
 
+# ********** Saving file ******************* #
+file_name = paste0( folder, "/ROC_all.Rdata")
+save( ROC_all, file = file_name)
+################################################
 
 
 
+tapply( X = ROC_all$`Accuracy: true/total`,
+        INDEX = ROC_all$Model, FUN = max )
 
+ROC_all$FPR = ROC_all$`(y=0,y_hat=1) FP`/(ROC_all$`(y=0,y_hat=0) TN`+ROC_all$`(y=0,y_hat=1) FP`)
+ROC_all$TPR = ROC_all$`Sensitivity (AKA Recall): TP/positive`
+
+
+roc_curve_all = ggplot( ROC_all, aes(x = FPR, y = TPR, label = probability_thresholds), alpha = 0.2) +
+  geom_line(data = subset(ROC_all, Model == 'Linear_Probability_Model'), col = 2) +
+  geom_line(data = subset(ROC_all, Model == 'Linear_Discriminant_Analysis'), col = 3) +
+  geom_line(data = subset(ROC_all, Model == 'Quadratic_Discriminant_Analysis'), col = 4) +
+  geom_line(data = subset(ROC_all, Model == 'Logistic_Regression'), col = 5) +
+  geom_line(data = subset(ROC_all, Model == 'Regularized_Logistic_Regression'), col = 6) +
+  geom_line(data = subset(ROC_all, Model == 'Regularized_Logistic_Regression (Lasso)'), col = 7) +
+  geom_line(data = subset(ROC_all, Model == 'k nearest neighbor'), col = 8) +
+  ggtitle( "ROC ANALYSIS ALL")  +
+  style_roc()
+
+
+roc_curve_all = ggplotly( roc_curve_all )
+roc_curve_all
+
+# ********** Saving file ******************* #
+file_name = paste0( folder, "/roc_curve_all.Rdata")
+save( roc_curve_all, file = file_name)
+################################################

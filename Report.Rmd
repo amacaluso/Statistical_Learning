@@ -1,0 +1,162 @@
+---
+title: "Report"
+author: "Gli statistichi"
+date: "14 giugno 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+source( 'Utils.R')
+
+ensureLibrary('ggplot2')
+ensureLibrary('plotly')
+ensureLibrary('DT')
+#source( "030_DATA_VIZ_CUSTOM.R")
+```
+
+
+## Introduzione
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+## Analisi Esplorative
+
+You can also embed plots, for example:
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+folder = 
+
+file = "results/EXPLORATORY_ANALYSES/descriptive_table.Rdata"
+load( file )
+
+
+datatable(descriptive, 
+          options = list(pageLength = 8), 
+          rownames = F, 
+          class = "display")
+#colnames = c( ) 
+```
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+
+file = "results/EXPLORATORY_ANALYSES/variables_density.Rdata"
+load( file )
+density_variables
+```
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+
+file = "results/EXPLORATORY_ANALYSES/red_hist_density.Rdata"
+load( file )
+red_hist_density
+```
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+
+file = "results/EXPLORATORY_ANALYSES/white_hist_density.Rdata"
+load( file )
+white_hist_density
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+## CLASSIFICAZIONE
+
+You can also embed plots, for example:
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+
+file = "results/MODELING/CLASSIFICATION/lpm_summary.Rdata"
+load( file )
+
+
+datatable(lpm_summary, 
+          options = list(pageLength = 8), 
+          rownames = F, 
+          class = "display")
+#colnames = c( ) 
+```
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/lda_importance.Rdata"
+load( file )
+lda_importance
+
+```
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/lda_hist_1_vs_0.Rdata"
+load( file )
+lda_hist_1_vs_0
+```
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/lda_line_1_vs_0.Rdata"
+load( file )
+lda_line_1_vs_0
+```
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/corrplot.Rdata"
+load( file )
+corrplot
+```
+
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/lda_hist.Rdata"
+load( file )
+lda_hist
+```
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/lda_roc_curve.Rdata"
+load( file )
+roc_curve_lda
+```
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/canonical_variable.Rdata"
+load( file )
+canonical_variable
+```
+
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/canonical_variable2.Rdata"
+load( file )
+canonical_variable2
+```
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/roc_curve_all.Rdata"
+load( file )
+roc_curve_all
+```
+
+
+
+
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+

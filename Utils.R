@@ -226,7 +226,7 @@ save_plot = function( plot, type = 'REGRESSION')
 {
   #  df = linear_reg_summary
   name_file = deparse(substitute(plot))
-  PATH = paste0( "results/MODELING/", type, "/plots/", name_file,".Rdata")
+  PATH = paste0( "results/MODELING/", type, name_file,".Rdata")
   save( plot, file = PATH)
   
 }

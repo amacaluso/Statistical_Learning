@@ -10,13 +10,8 @@ source( '020_Pre_processing.R') # REQUIRE SEED
 
 
 ### ***** SAVING FOLDER ***** ###
-
 folder = "results/MODELING/CLASSIFICATION"
 dir.create( folder )
-
-folder_plot = paste0( folder, "/plots")
-dir.create( folder_plot )
-
 ##################################
 
 
@@ -61,7 +56,7 @@ lda_importance = ggplotly( lda_importance)
 lda_importance
 
 # ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/lda_importance.Rdata")
+file_name = paste0( folder, "/lda_importance.Rdata")
 save( lda_importance, file = file_name)
 ################################################
 
@@ -113,7 +108,7 @@ lda_hist_1_vs_0 = ggplotly( lda_hist_1_vs_0)
 
 
 # ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/lda_hist_1_vs_0.Rdata")
+file_name = paste0( folder, "/lda_hist_1_vs_0.Rdata")
 save( lda_hist_1_vs_0, file = file_name)
 # ******************************************** #
 
@@ -132,7 +127,7 @@ lda_line_1_vs_0
 
 
 # ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/lda_line_1_vs_0.Rdata")
+file_name = paste0( folder, "/lda_line_1_vs_0.Rdata")
 save( lda_line_1_vs_0, file = file_name)
 ################################################
 
@@ -169,7 +164,7 @@ corrplot = ggplotly( ggcorrplot(corr_matrix, hc.order = TRUE,
                                 #ggtheme = ggplot2::theme_gray,
                                 colors = c("#6D9EC1", "white", "#E46726")))
 # ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/corrplot.Rdata")
+file_name = paste0( folder, "/corrplot.Rdata")
 save( corrplot, file = file_name)
 # ******************************************** #
 
@@ -260,7 +255,7 @@ canonical_variable
 
 
 # ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/canonical_variable.Rdata")
+file_name = paste0( folder, "/canonical_variable.Rdata")
 save( canonical_variable, file = file_name)
 # ******************************************** #
 
@@ -288,7 +283,7 @@ canonical_variable2
 
 
 # ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/canonical_variable2.Rdata")
+file_name = paste0( folder, "/canonical_variable2.Rdata")
 save( canonical_variable2, file = file_name)
 # ******************************************** #
 
@@ -304,15 +299,17 @@ pred_good = data.frame( label = 'good', prob = Y[which(train.wine_binary[,13]==0
 pred = rbind( pred_bad, pred_good )
 
 lda_hist = ggplot(pred, aes( x = prob, y = ..density.. )) +
-           geom_histogram(data = subset(pred, label == 'bad'), fill = "green", alpha = 0.2, binwidth = 0.5) +
-           geom_histogram(data = subset(pred, label == 'good'), fill = "red", alpha = 0.2, binwidth = 0.5) +
+           geom_histogram(data = subset(pred, label == 'bad'), 
+                          col = "green", alpha = 0.2) +
+           geom_histogram(data = subset(pred, label == 'good'), 
+                          col = "red", alpha = 0.2) +
            ggtitle( "Bad vs Good") 
 
 lda_hist = ggplotly( lda_hist )
 
 
 # ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/lda_hist.Rdata")
+file_name = paste0( folder, "/lda_hist.Rdata")
 save( lda_hist, file = file_name)
 # ******************************************** #
 
@@ -386,7 +383,7 @@ roc_curve_lda = ggplotly( roc_curve_lda )
 
 
 # ********** Saving file ******************* #
-file_name = paste0( folder_plot, "/lda_roc_curve.Rdata")
+file_name = paste0( folder, "/lda_roc_curve.Rdata")
 save( roc_curve_lda, file = file_name)
 ################################################
 

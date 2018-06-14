@@ -22,14 +22,15 @@ ensureLibrary("GGally")
 ensureLibrary('ggcorrplot')
 ensureLibrary('car')
 ensureLibrary('leaps')
+ensureLibrary('pls')
+ensureLibrary('gam')
+
 
 ### ***** SAVING FOLDER ***** ###
 
 folder = "results/EXPLORATORY_ANALYSES"
 dir.create( folder )
 
-folder_plot = paste0( folder, "/plots")
-dir.create( folder_plot )
 ##################################
 
 

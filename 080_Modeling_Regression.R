@@ -81,9 +81,11 @@ plt_bic = ggplotly( plt_bic )
 plt_cp = ggplotly( plt_cp )
 
 
-subplot( list( plt_rss, plt_bic, plt_cp) , titleX = F ) %>% layout(title = "RSS vs BIC vs CP")
+all_criteria = subplot( list( plt_rss, plt_bic, plt_cp) , titleX = F ) %>% layout(title = "RSS vs BIC vs CP")
 
-  
+# ********** Saving file ******************* #
+save_plot( all_criteria, type = 'REGRESSION')
+################################################
 
 # Another plot, based on a plot method for the 'regsubsets' object, 
 # provides a visual description of the recursive structure of 
@@ -152,7 +154,14 @@ CV.fit$results
 # Automatic plot
 df = data.frame( n_var = CV.fit$results$nvmax, RMSE = CV.fit$results$RMSE)
 
-ggplot( data = df, aes( x = n_var, y = RMSE)) + geom_line(col = "blue") + geom_point( col = 5)
+Leap_forward = ggplot( data = df, aes( x = n_var, y = RMSE)) + geom_line(col = "blue") + 
+               geom_point( aes( x = k.oneSE, y = avg[k.oneSE]), 
+                           pch = 17, col = "red", cex=2) + 
+               ggtitle( "Forward Subset Selection" )
+
+Leap_forward = ggplotly( Leap_forward )
+
+save_plot( Leap_forward )
 
 par(mfrow=c(1,1))
 k = CV.fit$results$nvmax
@@ -201,9 +210,10 @@ best_model<-lm(best_formula, data = train.wine)
 
 pred = predict(best_model, newdata = test.wine)
 
-MSPE = c(MSPE, mean((test.wine$alcohol-pred)^2))
-names(MSPE)[3] = "FSS"
-MSPE
+evaluation_model( target_variable = Y_test, 
+                  prediction = lm_sub_pred, 
+                  MODEL = 'Multiple Regression (FSS)' )
+
 
 ## Backward Stepwise Selection
 
@@ -261,6 +271,20 @@ lines(k, avg, lty = 1, lwd = 2, col = "darkgoldenrod1")
 arrows(k, avg-sdev, k, avg+sdev, 
        length = 0.05, angle = 90, code = 3, col = "skyblue1")
 
+
+df = data.frame( n_var = CV.fit$results$nvmax, RMSE = CV.fit$results$RMSE)
+
+
+Leap_Backward = ggplot( data = df, aes( x = n_var, y = RMSE)) + geom_line(col = "blue") + 
+                geom_point( aes( x = k.oneSE, y = avg[k.oneSE]), 
+                            pch = 17, col = "red", cex=2) + 
+                ggtitle( "Backward Subset Selection" )
+
+Leap_Backward = ggplotly( Leap_Backward )
+
+save_plot( Leap_Backward )
+
+
 # To identify the final model, we look for the simplest one 
 # within 1 standard error from the best one
 # In the manual plot:
@@ -280,24 +304,23 @@ best_model<-lm(best_formula, data = train.wine)
 
 pred = predict(best_model, newdata = test.wine)
 
+evaluation_model( target_variable = Y_test, 
+                  prediction = lm_sub_pred, 
+                  MODEL = 'Multiple Regression (BackSS)' )
 
-MSPE = c(MSPE, mean((test.wine$alcohol-pred)^2))
-names(MSPE)[4] = "BackSS"
-MSPE
+# MSPE = c(MSPE, mean((test.wine$alcohol-pred)^2))
+# names(MSPE)[4] = "BackSS"
+# MSPE
 
 # SHRINKAGE METHODS -------------------------------------------------------
 
 ## Ridge regression
 
-if (!require(glmnet)){
-  install.packages("glmnet")
-  library(glmnet)
-}
 
-x.train = model.matrix(alcohol ~ . -1, data = train.wine) 
-y.train = train.wine$alcohol
-x.test = model.matrix(alcohol ~ . -1, data = test.wine) 
-y.test = test.wine$alcohol
+x.train = model.matrix(Y ~ . -1, data = X) 
+y.train = Y
+x.test = model.matrix(Y_test ~ . -1, data = X_test) 
+y.test = Y_test
 
 
 # We now fit a ridge regression model. This is 
@@ -349,10 +372,15 @@ coef(cv.ridge)
 # on the test set and compute the MSE
 
 pred.ridge = predict(cv.ridge, x.test, s = cv.ridge$lambda.1se)
-MSPE.test.ridge = mean((pred.ridge-y.test)^2)
-MSPE = c(MSPE, MSPE.test.ridge)
-names(MSPE)[7] = "test.ridge"
-MSPE
+
+evaluation_model( target_variable = Y_test, 
+                  prediction = pred.ridge, 
+                  MODEL = 'Multiple Regression (Ridge)' )
+
+# MSPE.test.ridge = mean((pred.ridge-y.test)^2)
+# MSPE = c(MSPE, MSPE.test.ridge)
+# names(MSPE)[7] = "test.ridge"
+# MSPE
 
 ### Lasso regression
 
@@ -382,10 +410,16 @@ fit.lasso$df[i.best]
 # on the test set and compute the MSE
 
 pred.lasso = predict(fit.lasso, x.test, s = cv.lasso$lambda.1se)
-MSPE.test.lasso = mean((pred.lasso-y.test)^2)
-MSPE = c(MSPE, MSPE.test.lasso)
-names(MSPE)[8] = "test.lasso"
-MSPE
+
+evaluation_model( target_variable = Y_test, 
+                  prediction = pred.lasso, 
+                  MODEL = 'Multiple Regression (Lasso)' )
+
+
+# MSPE.test.lasso = mean((pred.lasso-y.test)^2)
+# MSPE = c(MSPE, MSPE.test.lasso)
+# names(MSPE)[8] = "test.lasso"
+# MSPE
 
 ### Elastic net regression
 
@@ -403,10 +437,16 @@ i.best = which(fit.elnet$lambda == cv.elnet$lambda.1se)
 fit.elnet$df[i.best]
 
 pred.elnet = predict(fit.elnet, x.test, s = cv.elnet$lambda.1se)
-MSPE.test.elnet = mean((pred.elnet-y.test)^2)
-MSPE = c(MSPE, MSPE.test.elnet)
-names(MSPE)[9] = "test.elnet"
-MSPE
+
+evaluation_model( target_variable = Y_test, 
+                  prediction = pred.elnet, 
+                  MODEL = 'Elastic net' )
+
+
+# MSPE.test.elnet = mean((pred.elnet-y.test)^2)
+# MSPE = c(MSPE, MSPE.test.elnet)
+# names(MSPE)[9] = "test.elnet"
+# MSPE
 
 ### Principal Components Regression (PCR)
 
@@ -459,10 +499,6 @@ plot(pca.out$x[, 1], pca.out$x[, 2], pch = 20, col = col,
 
 ## To run PCR, install the 'pls' package
 
-if (!require(pls)){
-  install.packages("pls")
-  library(pls)
-}
 
 # The 'pcr' command can automatically conduct CV. 
 # Fix the seed and fit the model on the 
@@ -498,10 +534,17 @@ pcr.fit$coefficients
 # Test set prediction and MSE
 
 pcr.pred = predict(pcr.fit, newdata = test.wine)
-MSPE.test.pcr = mean((test.wine$alcohol-pcr.pred)^2)
-MSPE = c(MSPE, MSPE.test.pcr)
-names(MSPE)[10] = "test12.pcr"
-MSPE
+
+evaluation_model( target_variable = Y_test, 
+                  prediction = pcr.pred, 
+                  MODEL = 'Multiple Regression (with PCA)' )
+
+
+
+# MSPE.test.pcr = mean((test.wine$alcohol-pcr.pred)^2)
+# MSPE = c(MSPE, MSPE.test.pcr)
+# names(MSPE)[10] = "test12.pcr"
+# MSPE
 
 # The test set error is large. Maybe we chose M too low.
 
@@ -532,20 +575,22 @@ pls.fit$coefficients
 # Test set prediction and MSE
 
 pls.pred = predict(pls.fit, newdata = test.wine)
-MSPE.test.pls = mean((test.wine$alcohol-pls.pred)^2)
-MSPE = c(MSPE, MSPE.test.pls)
-names(MSPE)[11] = "test6.pls"
-MSPE
+
+evaluation_model( target_variable = Y_test, 
+                  prediction = pls.pred, 
+                  MODEL = 'Multiple Regression (PLS)' )
+
+# MSPE.test.pls = mean((test.wine$alcohol-pls.pred)^2)
+# MSPE = c(MSPE, MSPE.test.pls)
+# names(MSPE)[11] = "test6.pls"
+# MSPE
 
 # It does not work well on the test set
 
 # GAM. For each component, we fit a smoothing spline with
 # 4 degrees of freedom
 
-if (!require(gam)) {
-  install.packages("gam")
-  library(gam)
-}
+
 
 names(train.wine)
 gam.3.fit = gam(alcohol ~ s(fixed.acidity, df = 4) + 
@@ -568,13 +613,15 @@ gam.3.fit = gam(alcohol ~ s(fixed.acidity, df = 4) +
 gam.4.pred = predict(gam.3.fit, newdata = test.wine, 
                      type = "response") 
 
-
+evaluation_model( target_variable = Y_test, 
+                  prediction = gam.4.pred, 
+                  MODEL = 'Generalize Additive Model' )
 # Test set prediction and MSE
 
-MSPE.test.gam4 = mean((test.wine$alcohol-gam.4.pred)^2)
-MSPE = c(MSPE, MSPE.test.gam4)
-names(MSPE)[19] = "test.gam"
-MSPE
+# MSPE.test.gam4 = mean((test.wine$alcohol-gam.4.pred)^2)
+# MSPE = c(MSPE, MSPE.test.gam4)
+# names(MSPE)[19] = "test.gam"
+# MSPE
 
 # Global test of nonlinear vs. linear effects only
 
@@ -596,7 +643,7 @@ plot(gam.3.fit, rugplot = TRUE, se = TRUE,
 # Let's add the estimate of the effect from the 
 # linear logistic regression model
 
-beta = coef(linreg)[index+1]
+beta = coef(linear_reg)[index+1]
 m = mean(train.wine$chlorides)
 abline(a = -beta*m, b = beta, col = "red", lwd = 2)
 
@@ -635,3 +682,4 @@ gam.4.fit.nl = gam(spam ~ . - char_freq_excl + s(char_freq_excl, df = 4),
 # effects only
 
 anova(glm.fit, gam.4.fit.nl, test = "Chisq")
+

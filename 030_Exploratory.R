@@ -1,5 +1,6 @@
 ### **** Importazione dati e Descrittive **** ###
 source( 'Utils.R')
+SEED = 12344321
 source( '020_Pre_processing.R')
 
 # EXPLORATORY ANALYSES ----------------------------------------------------
