@@ -1,6 +1,10 @@
 ### ***** IMPORT ***** ###
 ##########################
+
+SEED = 12344321
 source( '072_Modeling_lpm.R') # REQUIRE SEED
+
+SEED = 12344321
 source( '074_Modeling_lda.R') # REQUIRE SEED
 
 
@@ -27,55 +31,27 @@ dir.create( folder )
 qda.fit = qda(binary_quality ~ ., data = train.wine_binary)
 
 # Summary of results
-
 qda.fit
-
-#variable importance
-
-# group_distances<-sort(abs(diff(qda.fit$means)))
-# names(group_distances)<-colnames(diff(qda.fit$means))[as.vector(order((abs(diff(qda.fit$means)))))]
-# group_distances
-# 
-# var_importance<-sort(abs(diff(qda.fit$means))/coeff_var)
-# names(var_importance)<-colnames(diff(qda.fit$means))[as.vector(order((abs(diff(qda.fit$means))/coeff_var)))]
-# var_importance
-
 
 # Predict the qda fit on the test sample
 
 qda.pred = predict(qda.fit, newdata = test.wine_binary)
 
-# Confusion matrix
-
-table(true = test.wine_binary$binary_quality, predict = qda.pred$class)
-
 # Total success rate
 
-mean(qda.pred$class == test.wine_binary$binary_quality)
-
-test_error = c(test_error, 1-mean(qda.pred$class == test.wine_binary$binary_quality))
-names(test_error)[3]="qda"
-test_error
-
 # Test set ROC curve and AUC.
+pred_qda = prediction(qda.pred$posterior[ ,2], test.wine_binary$binary_quality)
+perf = performance(pred_qda, "tpr", "fpr")
 
-predob = prediction(qda.pred$posterior[ ,2], test.wine_binary$binary_quality)
-perf = performance(predob, "tpr", "fpr")
-plot(perf, main = "Quadratic Discriminant Analysis - test set", colorize = TRUE,
-     print.cutoffs.at = seq(0, 1, by = 0.1), text.adj = c(-0.2, 1.7))
-auc = c(auc, as.numeric(performance(predob, "auc")@y.values))
-names(auc)[3] = "qda"
-auc
-
-
+auc = as.numeric(performance(pred_qda, "auc")@y.values)
 
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
-
 ROC_qda = cbind( Model = 'Quadratic_Discriminant_Analysis', 
                  ROC_analysis( prediction = qda.pred$posterior[,2], 
                                y_true = test.wine_binary$binary_quality,
-                               probability_thresholds = tresholds))
+                               probability_thresholds = tresholds),
+                 AUC = auc)
 
 ROC_all = rbind( ROC_all, ROC_qda )
 
@@ -103,7 +79,7 @@ file_name = paste0( folder, "/qda_roc_curve.Rdata")
 save( roc_curve_qda, file = file_name)
 ################################################
 
-# rm(list=setdiff(ls(), c("test_error", 'ROC_all')))
+#rm(list=setdiff(ls(), 'ROC_all'))
 
 
 
@@ -124,28 +100,13 @@ glm.probs = predict(glm.fit, newdata = test.wine_binary, type = "response")
 # Predicted responses on the test set
 glm.pred = ifelse(glm.probs > 0.5, 1, 0)
 
-# Test sample confusion matrix
-table(true = test.wine_binary$binary_quality, predict = glm.pred)
-
-# Test sample total success rate
-mean(glm.pred == test.wine_binary$binary_quality)
-
-test_error = c(test_error, 1-mean(glm.pred == test.wine_binary$binary_quality))
-names(test_error)[4]="logreg"
-test_error
 
 # Test set ROC curve and AUC
-
-predob = prediction(glm.probs, test.wine_binary$binary_quality)
-perf = performance(predob, "tpr", "fpr")
-par(mfrow = c(1, 1))
-plot(perf, main = "Logistic Regression -  test set", colorize = TRUE,
-     print.cutoffs.at = seq(0, 1, by = 0.1), text.adj = c(-0.2, 1.7))
-auc = c(auc, as.numeric(performance(predob, "auc")@y.values))
-names(auc)[4] = "logreg"
-auc
+pred_logistic = prediction(glm.probs, test.wine_binary$binary_quality)
+perf = performance(pred_logistic, "tpr", "fpr")
 
 
+auc = as.numeric(performance(pred_logistic, "auc")@y.values)
 
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
@@ -153,7 +114,8 @@ tresholds<-seq( from = 0, to = 1, by = 0.01)
 ROC_log = cbind( Model = 'Logistic_Regression', 
                  ROC_analysis( prediction = glm.probs, 
                                y_true = test.wine_binary$binary_quality,
-                               probability_thresholds = tresholds))
+                               probability_thresholds = tresholds), 
+                 AUC = auc)
 
 ROC_all = rbind( ROC_all, ROC_log )
 
@@ -168,9 +130,9 @@ ROC_matrix_log = data.frame( treshold = ROC_matrix_log$probability_thresholds,
                              TPR = ROC_matrix_log$`Sensitivity (AKA Recall): TP/positive` )
 
 roc_curve_log = ggplot(ROC_matrix_log, aes(x = FPR, y = TPR, label = treshold)) +
-  geom_line(color = 15) + theme_bw() + 
-  style_roc() + #annotate("point", x = v, y = h, colour = "white")+
-  ggtitle( "Logistic Regression - test set")
+                geom_line(color = 15) + theme_bw() + 
+                style_roc() + #annotate("point", x = v, y = h, colour = "white")+
+                ggtitle( "Logistic Regression - test set")
 
 
 roc_curve_log = ggplotly( roc_curve_log )
@@ -210,40 +172,28 @@ plot(cv.ridge)
 coef(cv.ridge)
 
 # Use the best model according to the 1-SE rule to predict on the test set and compute the AUC
-
 ridge.probs = predict(cv.ridge, x.test, s = cv.ridge$lambda.1se, family = "binomial", type = "response")
 
-predob = prediction(ridge.probs, y.test)
+pred_ridge = prediction(ridge.probs, y.test)
 
-# Test sample total success rate
-mean(round(predob@predictions[[1]]) == test.wine_binary$binary_quality)
-
-test_error = c(test_error, 1-mean(round(predob@predictions[[1]]) == test.wine_binary$binary_quality))
-names(test_error)[5]="ridge"
-test_error
-
-perf = performance(predob, "tpr", "fpr")
-par(mfrow = c(1, 1))
-plot(perf, main = "Ridge", colorize = TRUE,
-     print.cutoffs.at = seq(0, 1, by = 0.1), text.adj = c(-0.2, 1.7))
-auc = c(auc, as.numeric(performance(predob, "auc")@y.values))
-names(auc)[5] = "ridge"
-auc
+perf = performance(pred_ridge, "tpr", "fpr")
+auc = as.numeric(performance(pred_ridge, "auc")@y.values)
 
 
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
 
 ROC_ridge = cbind( Model = 'Regularized_Logistic_Regression', 
-                 ROC_analysis( prediction = predob@predictions[[1]], 
+                 ROC_analysis( prediction = pred_ridge@predictions[[1]], 
                                y_true = test.wine_binary$binary_quality,
-                               probability_thresholds = tresholds))
+                               probability_thresholds = tresholds),
+                 AUC = auc)
 
 ROC_all = rbind( ROC_all, ROC_ridge )
 
 
 
-ROC_matrix_ridge = ROC_analysis( prediction = predob@predictions[[1]], 
+ROC_matrix_ridge = ROC_analysis( prediction = pred_ridge@predictions[[1]], 
                                  y_true = test.wine_binary$binary_quality, 
                                  probability_thresholds = tresholds)
 
@@ -252,9 +202,9 @@ ROC_matrix_ridge = data.frame( treshold = ROC_matrix_ridge$probability_threshold
                              TPR = ROC_matrix_ridge$`Sensitivity (AKA Recall): TP/positive` )
 
 roc_curve_ridge = ggplot(ROC_matrix_ridge, aes(x = FPR, y = TPR, label = treshold)) +
-  geom_line(color = 15) + theme_bw() + 
-  style_roc() + #annotate("point", x = v, y = h, colour = "white")+
-  ggtitle( "Logistic Regression - test set")
+                  geom_line(color = 15) + theme_bw() + 
+                  style_roc() + #annotate("point", x = v, y = h, colour = "white")+
+                  ggtitle( "Logistic Regression - test set")
 
 
 roc_curve_ridge = ggplotly( roc_curve_ridge )
@@ -279,49 +229,39 @@ coef(cv.lasso)
 # Use the best model according to the 1-SE rule to predict on the test set and compute the AUC
 lasso.probs = predict(cv.lasso, x.test, s = cv.lasso$lambda.1se, family = "binomial", type = "response")
 
-predob = prediction(lasso.probs, y.test)
+pred_lasso = prediction(lasso.probs, y.test)
 
-# Test sample total success rate
-mean(round(predob@predictions[[1]]) == test.wine_binary$binary_quality)
+perf = performance(pred_lasso, "tpr", "fpr")
 
-test_error = c(test_error, 1-mean(round(predob@predictions[[1]]) == test.wine_binary$binary_quality))
-names(test_error)[6]="lasso"
-test_error
-
-perf = performance(predob, "tpr", "fpr")
-par(mfrow = c(1, 1))
-plot(perf, main = "Lasso", colorize = TRUE,
-     print.cutoffs.at = seq(0, 1, by = 0.1), text.adj = c(-0.2, 1.7))
-auc = c(auc, as.numeric(performance(predob, "auc")@y.values))
-names(auc)[6] = "lasso"
-auc
+auc = as.numeric(performance(pred_lasso, "auc")@y.values)
 
 
 
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
 
-ROC_ = cbind( Model = 'Regularized_Logistic_Regression', 
-                   ROC_analysis( prediction = predob@predictions[[1]], 
-                                 y_true = test.wine_binary$binary_quality,
-                                 probability_thresholds = tresholds))
+ROC_lasso = cbind( Model = 'Regularized_Logistic_Regression (LASSO)', 
+              ROC_analysis( prediction = pred_lasso@predictions[[1]], 
+                            y_true = test.wine_binary$binary_quality,
+                            probability_thresholds = tresholds),
+              AUC = auc)
 
 ROC_all = rbind( ROC_all, ROC_ridge )
 
 
 
-ROC_matrix_ridge = ROC_analysis( prediction = predob@predictions[[1]], 
+ROC_matrix_lasso = ROC_analysis( prediction = pred_lasso@predictions[[1]], 
                                  y_true = test.wine_binary$binary_quality, 
                                  probability_thresholds = tresholds)
 
-ROC_matrix_ridge = data.frame( treshold = ROC_matrix_ridge$probability_thresholds,
+ROC_matrix_lasso = data.frame( treshold = ROC_matrix_ridge$probability_thresholds,
                                FPR = 1-ROC_matrix_ridge$`Specificity: TN/negative`, 
                                TPR = ROC_matrix_ridge$`Sensitivity (AKA Recall): TP/positive` )
 
-roc_curve_ridge = ggplot(ROC_matrix_ridge, aes(x = FPR, y = TPR, label = treshold)) +
-  geom_line(color = 15) + theme_bw() + 
-  style_roc() + #annotate("point", x = v, y = h, colour = "white")+
-  ggtitle( "Logistic Regression - test set")
+roc_curve_lasso = ggplot(ROC_matrix_lasso, aes(x = FPR, y = TPR, label = treshold)) +
+                  geom_line(color = 15) + theme_bw() + 
+                  style_roc() + #annotate("point", x = v, y = h, colour = "white")+
+                  ggtitle( "Logistic Regression - test set")
 
 
 roc_curve_ridge = ggplotly( roc_curve_ridge )
@@ -349,7 +289,6 @@ Y.train = Y[train.label]
 Y.test = Y[!train.label]
 
 # Fit knn on the training sample. We will consider a sequence of fits, with K ranging between 1 and 100, with unit steps
-
 K.vec = seq(from = 1, to = 50)
 
 # We write a function which, for each K: 
@@ -393,23 +332,6 @@ for (h in 1:10){
     sr.vec <- lapply(K.vec,knn.sr) else 
       sr.vec <- mclapply(K.vec,knn.sr,mc.cores = 1)
   
-  # knn.sr1 = function(K){
-  #   knn.pred = knn(X.train, X.test, Y.train, k = K)
-  #   return(c(K, mean(knn.pred == Y.test)))
-  # }
-  # 
-  # set.seed(12344321)
-  # sr.vec1 <- lapply(K.vec,knn.sr1)
-  # 
-  # for (i in 1:length(sr.vec)){
-  #   if (sr.vec1[[i]][2]!=sr.vec[[i]])
-  #     print(i)
-  # }
-  
-  # for(i in 1:length(K.vec)) {
-  #   sr.vec[i] = knn.sr(K.vec[i])
-  # }
-  
   # Finally, plot the success rate as a function of K
   
   par(mfrow = c(1, 1))
@@ -417,12 +339,12 @@ for (h in 1:10){
   # Notice the 'inverse U-shape'. K between 10 and 20 seems optimal
   
   k.min = min(which.max(sr.vec))
-  print(paste0("Iteration n. ",h))
-  print(paste0("random seed for sampling: ",seed_sampling))
-  print(paste0("random proprotion: ",rand_prop))
-  print(paste0("random seed for knn: ",seed_knn))
-  print(paste0("Min k neighbour: ",k.min))
-  print(paste0("Accuracy: ",sr.vec[k.min]))
+  # print(paste0("Iteration n. ",h))
+  # print(paste0("random seed for sampling: ",seed_sampling))
+  # print(paste0("random proprotion: ",rand_prop))
+  # print(paste0("random seed for knn: ",seed_knn))
+  # print(paste0("Min k neighbour: ",k.min))
+  # print(paste0("Accuracy: ",sr.vec[k.min]))
 }
 
 # [1] "Iteration n. 14"

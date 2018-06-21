@@ -58,7 +58,7 @@ cat( "SEED is", SEED, "\n")
 
 
 train.label = sample.split(wine_binary, SplitRatio = 3/5)
-cat("SplitRatio is 3/5")
+cat("SplitRatio is 3/5 \n")
 
 
 # Check that the split is balanced
