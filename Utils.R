@@ -45,7 +45,7 @@ load_and_update_metrics = function( MODEL = NA,
 
   if( df$MODEL %in% metrics_data$MODEL )
   {
-    cat( "\n METRICS OF ", MODEL, "HAS BEEN UPDATED \n")
+    cat( "\nMETRICS OF ", MODEL, "HAS BEEN UPDATED \n")
     metrics_data = metrics_data[ !(metrics_data$MODEL == df$MODEL), ] 
     metrics_data = rbind( metrics_data, df )
   } else

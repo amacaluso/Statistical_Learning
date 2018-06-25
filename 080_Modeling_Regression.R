@@ -81,6 +81,20 @@ plt_bic = ggplotly( plt_bic )
 plt_cp = ggplotly( plt_cp )
 
 
+df = cbind( df_rss, BIC = df_bic$BIC, CP = df_cp$CP )
+plt_all = ggplot( data = df, aes( x = index ) ) + 
+                  geom_line( aes( y = RSS), col = 'red') +   geom_point( aes( y = RSS), col = 'red') +  
+                  geom_point( aes( x = which.min( df_rss$RSS), y = df_rss$RSS[ which.min( df_rss$RSS)]), col = 'blue', size = 3) + 
+                  geom_line( aes( y = BIC), col = 'yellow') + 
+                  geom_point( aes( y = BIC), col = 'yellow') +  
+                  geom_point( aes( x = which.min( df_bic$BIC), y = df_bic$BIC[ which.min( df_bic$BIC)]),
+                              col = 'green', size = 3) +
+                  geom_line( aes( y = CP), col = 'skyblue1') + 
+                  geom_point( aes( y = CP), col = 'skyblue1') + 
+                  geom_point( aes( x = which.min( df_cp$CP), y = df_cp$CP[ which.min( df_cp$CP)]),
+                              col = 'red', size = 3)
+ggplotly( plt_all )%>% layout(title = "RSS vs BIC vs CP")
+
 all_criteria = subplot( list( plt_rss, plt_bic, plt_cp) , titleX = F ) %>% layout(title = "RSS vs BIC vs CP")
 
 # ********** Saving file ******************* #

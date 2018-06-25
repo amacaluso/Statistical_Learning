@@ -24,6 +24,8 @@ ensureLibrary('car')
 ensureLibrary('leaps')
 ensureLibrary('pls')
 ensureLibrary('gam')
+ensureLibrary('dplyr')
+
 
 
 ### ***** SAVING FOLDER ***** ###
