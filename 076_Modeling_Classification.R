@@ -239,10 +239,10 @@ auc = as.numeric(performance(pred_lasso, "auc")@y.values)
 tresholds<-seq( from = 0, to = 1, by = 0.01)
 
 ROC_lasso = cbind( Model = 'Regularized_Logistic_Regression (LASSO)', 
-              ROC_analysis( prediction = pred_lasso@predictions[[1]], 
-                            y_true = test.wine_binary$binary_quality,
-                            probability_thresholds = tresholds),
-              AUC = auc)
+                   ROC_analysis( prediction = pred_lasso@predictions[[1]], 
+                                 y_true = test.wine_binary$binary_quality,
+                                 probability_thresholds = tresholds),
+                   AUC = auc)
 
 ROC_all = rbind( ROC_all, ROC_lasso )
 
@@ -252,9 +252,9 @@ ROC_matrix_lasso = ROC_analysis( prediction = pred_lasso@predictions[[1]],
                                  y_true = test.wine_binary$binary_quality, 
                                  probability_thresholds = tresholds)
 
-ROC_matrix_lasso = data.frame( treshold = ROC_matrix_ridge$probability_thresholds,
-                               FPR = 1-ROC_matrix_ridge$`Specificity: TN/negative`, 
-                               TPR = ROC_matrix_ridge$`Sensitivity (AKA Recall): TP/positive` )
+ROC_matrix_lasso = data.frame( treshold = ROC_matrix_lasso$probability_thresholds,
+                               FPR = 1-ROC_matrix_lasso$`Specificity: TN/negative`, 
+                               TPR = ROC_matrix_lasso$`Sensitivity (AKA Recall): TP/positive` )
 
 roc_curve_lasso = ggplot(ROC_matrix_lasso, aes(x = FPR, y = TPR, label = treshold)) +
                   geom_line(color = 15) + theme_bw() + 
@@ -262,12 +262,12 @@ roc_curve_lasso = ggplot(ROC_matrix_lasso, aes(x = FPR, y = TPR, label = treshol
                   ggtitle( "Logistic Regression - test set")
 
 
-roc_curve_ridge = ggplotly( roc_curve_ridge )
-roc_curve_ridge
+roc_curve_lasso = ggplotly( roc_curve_lasso )
+roc_curve_lasso
 
 # ********** Saving file ******************* #
-file_name = paste0( folder, "/ridge_roc_curve.Rdata")
-save( roc_curve_ridge, file = file_name)
+file_name = paste0( folder, "/roc_curve_lasso.Rdata")
+save( roc_curve_lasso, file = file_name)
 ################################################
 
 #rm(list=setdiff(ls(), c("test_error", 'ROC_all')))
@@ -382,20 +382,27 @@ file_name = paste0( folder, "/ROC_best.Rdata")
 save( ROC_best, file = file_name)
 ################################################
 
-roc_curve_all = ggplot( ROC_all, aes(x = FPR, y = TPR, label = probability_thresholds), alpha = 0.2) +
+
+ROC_matrix_lasso = data.frame( treshold = ROC_matrix_lasso$probability_thresholds,
+                               FPR = 1-ROC_matrix_lasso$`Specificity: TN/negative`, 
+                               TPR = ROC_matrix_lasso$`Sensitivity (AKA Recall): TP/positive` )
+
+ROC_all$FPR = 1 - ROC_all$`Specificity: TN/negative`
+ROC_all$TPR = ROC_all$`Sensitivity (AKA Recall): TP/positive`
+
+roc_curve_all = ggplot( ROC_all, aes(x = FPR, y = TPR, label = probability_thresholds, text = Model), alpha = 0.2) +
                         geom_line(data = subset(ROC_all, Model == 'Linear_Probability_Model'), col = 2) +
                         geom_line(data = subset(ROC_all, Model == 'Linear_Discriminant_Analysis'), col = 3) +
                         geom_line(data = subset(ROC_all, Model == 'Quadratic_Discriminant_Analysis'), col = 4) +
                         geom_line(data = subset(ROC_all, Model == 'Logistic_Regression'), col = 5) +
                         geom_line(data = subset(ROC_all, Model == 'Regularized_Logistic_Regression'), col = 6) +
-                        geom_line(data = subset(ROC_all, Model == 'Regularized_Logistic_Regression (Lasso)'), col = 7) +
+                        geom_line(data = subset(ROC_all, Model == 'Regularized_Logistic_Regression (LASSO)'), col = 7) +
                         geom_line(data = subset(ROC_all, Model == 'k nearest neighbor'), col = 8) +
-                        ggtitle( "ROC ANALYSIS ALL")  +
-                        style_roc()
-
-
+                        ggtitle( "ROC ANALYSIS ALL")  
 roc_curve_all = ggplotly( roc_curve_all )
 roc_curve_all
+
+
 
 # ********** Saving file ******************* #
 file_name = paste0( folder, "/roc_curve_all.Rdata")

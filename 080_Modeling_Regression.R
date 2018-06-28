@@ -1,7 +1,5 @@
 ### ***** IMPORT ***** ###
 ##########################
-# source( '072_Modeling_lpm.R') # REQUIRE SEED
-# source( '074_Modeling_lda.R') # REQUIRE SEED
 
 source( 'Utils.R')
 SEED = 12344321
@@ -93,12 +91,12 @@ plt_all = ggplot( data = df, aes( x = index ) ) +
                   geom_point( aes( y = CP), col = 'skyblue1') + 
                   geom_point( aes( x = which.min( df_cp$CP), y = df_cp$CP[ which.min( df_cp$CP)]),
                               col = 'red', size = 3)
-ggplotly( plt_all )%>% layout(title = "RSS vs BIC vs CP")
+plt_BBS_all = ggplotly( plt_all )%>% layout(title = "RSS vs BIC vs CP")
 
 all_criteria = subplot( list( plt_rss, plt_bic, plt_cp) , titleX = F ) %>% layout(title = "RSS vs BIC vs CP")
 
 # ********** Saving file ******************* #
-save_plot( all_criteria, type = 'REGRESSION')
+save_plot( plt_BBS_all, type = 'REGRESSION')
 ################################################
 
 # Another plot, based on a plot method for the 'regsubsets' object, 
@@ -129,9 +127,40 @@ evaluation_model( target_variable = Y_test, prediction = lm_sub_pred, MODEL = 'M
 
 
 
-## Forward Stepwise Selection
+## ++++++++++++++++++++ Forward Stepwise Selection ++++++++++++++++++++ ##
 
 fit = regsubsets(Y ~ ., data = X, method = "forward", nvmax = ncol(X))
+fit.summary = summary(fit)
+
+imin = plot_subset_error(fit.summary)
+# CV using the 'caret' package
+# Info at http://topepo.github.io/caret/index.html
+
+# We consider LOOCV, repeated one
+set.seed(1)
+fitControl = trainControl(method = "loocv")
+pGrid = expand.grid(nvmax = seq(from = 1, to = dim(train.wine)[2]-1, by = 1))
+repetition = 10
+CV.fit = train(alcohol ~ ., data = train.wine, number = repetition,
+               method = "leapForward", trControl = fitControl,
+               tuneGrid = pGrid)
+
+# CV.fit$times
+# 
+# CV.fit
+
+# Notice that the models are evaluated in terms of 
+# RMSE and Rsquared. RMSE is the root mean squared error 
+# averaged over CV iterations. Rsquared is the R^2 coefficient 
+# averaged across the resampling results. We look for models 
+# with low 'RMSE' and large 'Rsquared'. Note that the RMSE and
+# Rsquared standard deviation is also calculated. 
+
+
+CV.fit$results
+## Forward Stepwise Selection
+
+fit = regsubsets(alcohol ~ ., data = train.wine, method = "forward",nvmax = ncol(train.wine)-1)
 fit.summary<-summary(fit)
 
 imin<-plot_subset_error(fit.summary)
@@ -141,7 +170,6 @@ imin<-plot_subset_error(fit.summary)
 
 
 # We consider LOOCV, repeated one
-
 set.seed(1)
 fitControl = trainControl(method = "loocv")
 pGrid = expand.grid(nvmax = seq(from = 1, to = dim(train.wine)[2]-1, by = 1))
@@ -163,6 +191,53 @@ CV.fit
 
 
 CV.fit$results
+
+# Plot the output
+# Automatic plot
+
+plot(CV.fit)
+
+# Manual plot (similar to fig. 3.7)
+
+par(mfrow=c(1,1))
+k = CV.fit$results$nvmax
+# To identify the final model, we look for the simplest one 
+# within 1 standard error from the best one
+# In the manual plot:
+
+k.min = which.min(avg)
+# abline(h = avg[k.min]+sdev[k.min], lty = 2, lwd = 1, col = "purple") 
+k.oneSE = which.max(avg[1:k.min] <= avg[k.min]+sdev[k.min]) #min(k[avg[1:k.min] <= avg[k.min]+sdev[k.min]])
+# abline(v = k.oneSE, lty = 2, lwd = 1, col = "purple")
+
+points(k.oneSE, avg[k.oneSE], pch = 17, col = "red", cex=2)
+
+
+# Automatic command:
+
+oneSE.reg = oneSE(CV.fit$results, metric = "RMSE", 
+                  num = nrow(train.wine), maximize = FALSE)
+CV.fit$results[oneSE.reg, ]
+
+# The minimum-RMSE model is with k = 11
+
+coef(fit, imin)
+
+# The 1-SE rule suggests k = 7
+
+coef(fit, oneSE.reg)
+
+# Let's compute its test set MSPE
+
+regressors<-names(fit.summary$which[oneSE.reg,fit.summary$which[oneSE.reg,]==T])[-1]
+best_formula<-as.formula(paste(response," ~ ",paste(regressors,collapse=" + ")))
+best_model<-lm(best_formula, data = train.wine)
+
+pred = predict(best_model, newdata = test.wine)
+
+MSPE = c(MSPE, mean((test.wine$alcohol-pred)^2))
+names(MSPE)[3] = "FSS"
+MSPE
 
 # Plot the output
 # Automatic plot
