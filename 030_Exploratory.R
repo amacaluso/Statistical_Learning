@@ -4,31 +4,22 @@ SEED = 12344321
 source( '020_Pre_processing.R')
 
 # EXPLORATORY ANALYSES ----------------------------------------------------
-
 folder = "results/EXPLORATORY_ANALYSES"
 dir.create( folder )
-
-# str(red)
-# summary(red)
-# pairs(red,col="red4")
-
-# str(white)
-# summary(white)
-# pairs(white, col="khaki1")
 
 breaks = seq(1,10,by=.9)
 
 bw<-function(b, x) { b/bw.nrd0(x) }
 
 red_hist_density = ggplot( data = red ) + 
-  geom_histogram( aes( x = red$quality,  y = ..density..), 
-                  breaks = breaks, colour = "black", fill = c("red4")) + 
-  geom_density( aes( x = red$quality ), adjust=bw(0.4, red$quality)) +
-  scale_x_continuous( breaks = breaks) +
-  xlab("wine quality (1-10)") + ggtitle("Red wine") +
-  theme_bw() 
+                   geom_histogram( aes( x = red$quality,  y = ..density..), 
+                                   breaks = breaks, colour = "black", fill = c("red4")) + 
+                   geom_density( aes( x = red$quality ), adjust=bw(0.4, red$quality)) +
+                   scale_x_continuous( breaks = breaks) +
+                   xlab("wine quality (1-10)") + ggtitle("Red wine") +
+                   theme_bw() 
 
-red_hist_density = ggplotly( red_hist_density)
+red_hist_density = ggplotly( red_hist_density )
 
 
 # ********** Saving a file ******************* #
@@ -91,16 +82,13 @@ unit_measures = c( 'g(tartaric_acid)/dm^3)', 'g(acetic_acid)/dm^3',
 
 
 plots = lapply( X = variables, FUN = plot_density, unit = unit_measures)
-density_variables = do.call("grid.arrange", c(plots, ncol=3))
 
 
 # ********** Saving a file ******************* #
 ################################################
 file_name = paste0( folder, "/variables_density.Rdata")
-save( density_variables, file = file_name)
+save( plots, file = file_name)
 ################################################
-
-
 
 
 
@@ -132,7 +120,81 @@ save( descriptive, file = paste0(folder, "/descriptive_table.Rdata"))
 
 
 
+# Within group covariance matrices
+
+corr_matrix = cor(wine[, 1:12])
+corr_matrix = round( corr_matrix, 3)
+corrplot = ggplotly( ggcorrplot(corr_matrix, hc.order = TRUE,
+                                outline.col = "white",
+                                #ggtheme = ggplot2::theme_gray,
+                                colors = c("#6D9EC1", "white", "#E46726")) +
+                       ggtitle("Matrice di correlazione"))
+# ********** Saving a file ******************* #
+file_name = paste0( folder, "/corrplot.Rdata")
+save( corrplot, file = file_name)
+# ******************************************** #
+
+# Spearman correlation
+spearman_v = c()
+pearson_v = c()
+kendall_v = c()
+
+for (col in colnames( wine[ , 1:11]) )
+{
+  #data = cbind( wine[, col], wine[, 'quality'])
+  pearson = cor( wine[, col], wine[, 'quality'] )
+  pearson_v = c(pearson_v, pearson)
+  
+  spearman = cor(wine[, col], wine[, 'quality'], method = 'spearman')
+  spearman_v = c( spearman_v, spearman )
+  
+  kendall = cor(wine[, col], wine[, 'quality'], method = 'kendall')
+  kendall_v = c(kendall_v, kendall )
+  
+  cat( col, " --> ", pearson, " e ", spearman, "\n")
+  
+  #anova()
+}
+
+data_corr = data.frame( Variables = colnames( wine[ , 1:11]),
+                        Pearson = round( pearson_v, 3),
+                        Spearman = round(spearman_v,3), 
+                        Kendall = round(kendall_v,3))
+
+corr_Y = ggplot(data_corr, aes( Variables, Spearman, fill = Variables, text = paste('Kendall:', Kendall, "\n", 
+                                                                                    'Pearson:', Pearson, "\n" ))) +
+         geom_bar(  stat = "identity", position='stack') + 
+         ggtitle( "Correlazione della variabile Qualità" ) + guides( fill = FALSE ) +
+         theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+         ylab("Spearman's correlation") 
+#  theme(axis.text.x = element_text(angle = 45, vjust = 1,  size = 12, hjust = 1))
+
+corr_Y = ggplotly( corr_Y ) %>% layout( showlegend = FALSE )
+
+# ********** Saving a file ******************* #
+file_name = paste0( folder, "/corr_Y.Rdata")
+save( corr_Y, file = file_name)
+# ******************************************** #
 # rm( means_tr, sd_tr, cv_tr, means_ts, sd_ts, cv_ts,
 #     descriptive_tr, descriptive_ts, descriptive)
 
+df = data.frame( table( wine$quality))
+colnames( df ) = c("Quality", 'Frequencies')
+df$Relative_Freq = paste( round( df$Frequencies/sum(df$Frequencies)*100, 1), '%')
+
+quality_distr = ggplot(data=df, aes(x=Quality, y=Frequencies, fill = Quality)) +
+                geom_bar(stat="identity") + 
+                geom_text(aes(label=Relative_Freq),  vjust=-5, color="black") + #
+                ggtitle( 'Qualità - Distribuzione di frequenza')
+
+quality_distr = ggplotly( quality_distr )
+
+# ********** Saving a file ******************* #
+file_name = paste0( folder, "/quality_distr.Rdata")
+save( quality_distr, file = file_name)
+# ******************************************** #
+
+
 rm(list= ls())
+
+cat('\n\n SCRIPT ESEGUITO CORRETTAMENTE!! \n\n')

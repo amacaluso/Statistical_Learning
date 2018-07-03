@@ -42,20 +42,20 @@ var_importance
 
 var_importance = data.frame( variable = names(var_importance), 
                              Importance = round( var_importance,2) , 
-                             row.names = 1:length(var_importance) )
+                             row.names = 1:length(var_importance),
+                             groups_mean_0 = group_means_lda[1,] ,
+                             groups_mean_1 = group_means_lda[2,] ) 
 
-lda_importance = ggplot(var_importance, aes( variable, Importance, color = variable)) +
+lda_importance = ggplot(var_importance, aes( variable, Importance, color = variable, text = paste( 'Media gruppo 1:', groups_mean_1, "\n", 
+                                                                                                   'Media gruppo 0:', groups_mean_0))) +
                  geom_bar(  stat = "identity", position='stack') + 
-                 ggtitle( "LDA - Variable importance" ) + theme_bw() +
+                 ggtitle( "LDA - Variable importance" ) + theme_bw() + guides( fill = FALSE ) +
                  theme(axis.text.x = element_text(angle = 45, vjust = 1,  size = 12, hjust = 1))
 
-lda_importance = ggplotly( lda_importance) 
-lda_importance
+lda_importance = ggplotly( lda_importance) %>% layout( showlegend = FALSE)
 
-# ********** Saving a file ******************* #
-file_name = paste0( folder, "/lda_importance.Rdata")
-save( lda_importance, file = file_name)
-################################################
+save_plot( lda_importance, type = "CLASSIFICATION")
+
 
 
 
@@ -85,11 +85,8 @@ lda_hist_1_vs_0 = ggplot(lda_pred_ts, aes( x = prob, y = ..density.. )) +
 
 lda_hist_1_vs_0 = ggplotly( lda_hist_1_vs_0)
 
+save_plot( lda_hist_1_vs_0, type = "CLASSIFICATION")
 
-# ********** Saving a file ******************* #
-file_name = paste0( folder, "/lda_hist_1_vs_0.Rdata")
-save( lda_hist_1_vs_0, file = file_name)
-# ******************************************** #
 
 
 
@@ -98,17 +95,11 @@ save( lda_hist_1_vs_0, file = file_name)
 lda_line_1_vs_0 = ggplot(lda_pred_ts, aes( x = prob, y = ..density.. )) +
                   geom_density(data = subset(lda_pred_ts, label == 'bad'), fill = "red", alpha = 0.2) +
                   geom_density(data = subset(lda_pred_ts, label == 'good'), fill = "blue", alpha = 0.2) +
-                  ggtitle( "Bad vs Good (test set)") + 
+                  ggtitle( "Bad vs Good") + 
                   geom_vline( xintercept = intersection )
 
 lda_line_1_vs_0 = ggplotly( lda_line_1_vs_0 )
-lda_line_1_vs_0
-
-
-# ********** Saving a file ******************* #
-file_name = paste0( folder, "/lda_line_1_vs_0.Rdata")
-save( lda_line_1_vs_0, file = file_name)
-################################################
+save_plot( lda_line_1_vs_0, type = "CLASSIFICATION")
 
 
 
@@ -135,17 +126,13 @@ mean.tot<-(mean.good*n_good+mean.bad*n_bad)/(n_good+n_bad)
 
 
 # Within group covariance matrices
-
 corr_matrix = cor(wine[, 1:12])
 corr_plot = corrplot(corr_matrix, method="color")
 corrplot = ggplotly( ggcorrplot(corr_matrix, hc.order = TRUE,
                                 outline.col = "white",
                                 #ggtheme = ggplot2::theme_gray,
                                 colors = c("#6D9EC1", "white", "#E46726")))
-# ********** Saving a file ******************* #
-file_name = paste0( folder, "/corrplot.Rdata")
-save( corrplot, file = file_name)
-# ******************************************** #
+
 
 S.good <- var(good)
 S.bad <- var(bad)
@@ -219,8 +206,6 @@ canonical_variable = ggplot(canonic_var, aes( x = index, y= can_var )) +
 
 
 canonical_variable = ggplotly( canonical_variable )
-canonical_variable
-
 
 # ********** Saving a file ******************* #
 file_name = paste0( folder, "/canonical_variable.Rdata")
@@ -317,12 +302,7 @@ roc_curve_lda = ggplot(ROC_matrix_lda, aes(x = FPR, y = TPR, label = treshold)) 
 
 
 roc_curve_lda = ggplotly( roc_curve_lda )
-
-
-# ********** Saving file ******************* #
-file_name = paste0( folder, "/lda_roc_curve.Rdata")
-save( roc_curve_lda, file = file_name)
-################################################
+save_plot( roc_curve_lda, type = "CLASSIFICATION" )
 
 
 

@@ -1,0 +1,10 @@
+##<a name="24_LOGISTIC_REGRESSION" style="pointer-events: none; cursor: default;" ><font color="red"> 2.4. Regressione Logistica</font></a>
+
+
+La regressione logistica è uno dei principali metodi utilizzati per problemi di classificazione che consente di effettuare la stima che l’evento interessato si realizzi (Y=1) per poi effettuare una classificazione delle osservazioni basata sul valore di probabilità stimata.
+
+La stima della probabilità avviene sfruttando la funzione di ripartizione logistica tale che: 
+
+$$P(Y=1|X=x)=\frac{\exp{(\beta_0+\beta^Tx)}}{1+\exp{(\beta_0+\beta^Tx)}}$$
+
+Applicando questo modello al nostro caso, i risultati ottenuti sono in linea con quelli osservati nei modelli precedenti anche se presentano delle performance leggermente inferiori avendo un’accuracy pari a 0.7388 e quindi un test error di 0.26117. Lo stesso discorso vale per i valori associati all’AUC che risulta leggermente inferiore agli altri con un valore di 0.8088. Osservando invece i valori di stima dei parametri, essi risultano tutti altamente significativi con unica eccezione per la variabile chlorides.

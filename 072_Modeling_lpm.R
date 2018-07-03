@@ -9,12 +9,8 @@ source( '020_Pre_processing.R') # REQUIRE SEED
 
 
 ### ***** SAVING FOLDER ***** ###
-
 folder = "results/MODELING/CLASSIFICATION"
 dir.create( folder )
-
-folder_plot = paste0( folder, "/plots")
-dir.create( folder_plot )
 ##################################
 
 
@@ -25,12 +21,11 @@ lpm.fit.all <- lm(binary_quality ~ ., data = train.wine_binary)
 # summary(lpm.fit.all)
 
 lpm_summary = as.data.frame( round( summary(lpm.fit.all)$coefficients, 2))
+lpm_summary = cbind( variable = row.names(lpm_summary), lpm_summary )
+
 
 # ********** Saving a file ******************* #
-#
-file_name = paste0( folder, "/lpm_summary.Rdata")
-save( lpm_summary, file = file_name)
-#
+save_table( df = lpm_summary, type = "CLASSIFICATION")
 
 
 # Predicted probabilities of quality
@@ -42,17 +37,15 @@ lpm_all_probs = data.frame( lpm.all.probs )
 lpm_all_probs$lpm.all.probs = round(lpm_all_probs$lpm.all.probs, 2)
 
 lpm_probs = ggplot( data = lpm_all_probs ) + 
-            geom_histogram( aes( x = lpm.all.probs), binwidth = 0.04, color="darkblue", fill="lightblue") + 
+            geom_histogram( aes( x = lpm.all.probs), binwidth = 0.02, color="darkblue", fill="lightblue") + 
             xlab("Predicted values") +  ylab("Frequency") + 
-            ggtitle("Linear probability model - test set") +
+            ggtitle("Linear Probability Model") +
             theme_bw() 
 
 lpm_probs = ggplotly( lpm_probs )
 
 # ********** Saving a file ******************* #
-#
-file_name = paste0( folder_plot, "/lpm_probs.Rdata")
-save( lpm_probs, file = file_name)
+save_plot( lpm_probs, type = "CLASSIFICATION")
 #
 
 
@@ -74,12 +67,7 @@ perf = performance(pred_lpm, "tpr", "fpr")
 
 auc = c(as.numeric(performance(pred_lpm, "auc")@y.values))
 ROC_lpm$AUC = auc
-
-
 ROC_all = ROC_lpm
-
-
-
 
 
 ROC_matrix_lpm = ROC_analysis( prediction = lpm.all.probs, 
@@ -96,13 +84,8 @@ roc_curve_lpm = ggplot(ROC_matrix_lpm, aes(x = FPR, y = TPR, label = treshold)) 
 
 
 roc_curve_lpm = ggplotly( roc_curve_lpm )
-roc_curve_lpm
 
-# ********** Saving a file ******************* #
-file_name = paste0( folder_plot, "/lpm_roc_curve.Rdata")
-save( roc_curve_lpm, file = file_name)
-################################################
-
+save_plot( roc_curve_lpm, type = "CLASSIFICATION")
 rm(list=setdiff(ls(), c('ROC_all', 'roc_curve_lpm')))
 
    

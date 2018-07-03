@@ -1,0 +1,21 @@
+##<a name="3_Conclusioni" style="pointer-events: none; cursor: default;" ><font color="red">3. Conclusioni</font></a>
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+
+file = "results/MODELING/CLASSIFICATION/ROC_best.Rdata"
+load( file )
+
+df[, 7:13] = round(df[, 7:13], 3)
+
+datatable(df, 
+          options = list(pageLength = 9), 
+          rownames = F, 
+          class = "display")
+```
+
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/roc_curve_all.Rdata"
+load( file )
+plot
+```

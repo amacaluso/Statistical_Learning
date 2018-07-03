@@ -1,0 +1,44 @@
+##<a name="21_LPM" style="pointer-events: none; cursor: default;" ><font color="red"> 2.1. Linear Probabity Model</font></a>
+
+Il modello di regressione si inserisce nel contesto dei metodi di classificazione che si basano sulla definizione di una funzione descriminante, $\delta_k(x)$, dalla quale poi viene derivata l'appartenenza di una osservazione ad una particolare classe. In particolare, la soluzione proposta da questa tecnica è quella di scegliere come funzione discriminante $E[Y|X]$ che, data la natura dicotomica del problema (i.e. una osservazione o appartiene o non appartiene ad una data modalità), equivale alla probabilità di appartenenza ad una generica classe g, $P(Y=g|X)$.
+
+In generale, immaginando di avere un problema di classificazione multinomiale (G modalità), questo approccio consiste nell'adottare un modello di regressione lineare in cui la variabile risposta **Y** è una matrice di variabili indicatrici, ciascuna avente valore 1 se l'osservazione appartiene alla relativa modalità della variabile di output e 0 altrimenti.
+Nel caso specifico di una classificazione binaria, possiamo tuttavia adattare un solo modello al dataset di training ed utilizzarlo per calcolare uno score che servirà poi per classificare ciascuna osservazione in base ad un dato treshold (da determinare). Si noti che lo score calcolato sarà per costruzione un numero reale e, quindi, malgrado lo si utilizzi per modellare la probabilità di appartenenza ad una classe - di qui il nome Linear Probability Model (LPM) -, non è possibile interpretarlo come una probabilità. Tuttavia, è possibile dimostrare che sommando gli score di una singola osservazione ottenuti dai modelli relativi a ciascuna modalità il risultato è 1. Infatti:
+
+$$\hat{Y}_{n x G} = X_{n x (p+1)} * ({X}^{T} X)_{(p+1) x (p+1)}^{-1} * {X}_{(p+1) x n}^{T} * Y_{n x G}$$
+
+Post-moltiplicando poi per un vettore colonna G-dimensionale formato da soli 1, possiamo sommare gli elementi di $\hat{Y}$:
+
+$$\hat{Y}_{n x G} * 1_{G x 1} = X_{n x (p+1)} * ({X}^{T} X)_{(p+1) x (p+1)}^{-1} * {X}_{(p+1) x n}^{T} * Y_{n x G} * 1_{G x 1}$$
+
+A questo punto, pre-moltiplicando a destra per la matrice identità di ordine $n$ ottenuta come $(X {X}^{T})^{-1}(X {X}^{T})$, è facile verificare che l'equazione precedente si riduce semplicemente a:
+
+$$(X {X}^{T})^{-1}(X {X}^{T}) * X_{n x (p+1)} * ({X}^{T} X)_{(p+1) x (p+1)}^{-1} * {X}_{(p+1) x n}^{T} * Y_{n x G} * 1_{G x 1}$$
+
+$$(X {X}^{T})^{-1}X [({X}^{T} * X_{n x (p+1)}) * ({X}^{T} X)_{(p+1) x (p+1)}^{-1}] * {X}_{(p+1) x n}^{T} * Y_{n x G} * 1_{G x 1}$$
+
+$$[(X {X}^{T})^{-1}X * {X}_{(p+1) x n}^{T}] * Y_{n x G} * 1_{G x 1}$$
+
+$$\hat{Y}_{n x G} * 1_{G x 1} = Y_{n x G} * 1_{G x 1}$$
+
+Per cui si ricava che la somma degli score predetti è 1 per ciascuna osservazioni dal momento che le funzioni indicatrici (RHS) vale $\hat{Y_1}+ ... + \hat{Y_G} = 1$ per costruzione.
+
+Per cui, malgrado gli score non siano probabilità, sono accomunate ad esse da questa proprietà.
+
+Passando all'applicazione, abbiamo fittato il modello utilizzando tutti i regressori disponibili:
+
+**codice modello**
+
+Come anticipato, lo score predetto dal modello non è in generale compreso tra 0 e 1, come si evince dal seguente grafico.
+
+```{r, fig.width=10, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/lpm_probs.Rdata"
+load( file )
+plot
+```
+
+Per poter classificare le osservazioni in una delle due classi è necessario poi fissare un taglio sul valore predetto dal modello che funga da separatore delle due classi. La scelta di questa soglia non è tuttavia così intuitiva come in altri modelli, proprio perchè l'outcome non è vincolato all'intervallo $[0,1]$. Per questa ragione, la scelta del treshold ottimale è stata fatta sulla base di una ricerca a griglia in modo da minimizzare l'errore di classificazione nel **da verificare** set:
+
+**qui va inserita la parte di ottimizzazione treshold**
+
+**terminare con risulati di accuratezza e ROC**
