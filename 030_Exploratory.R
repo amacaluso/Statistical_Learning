@@ -77,11 +77,14 @@ variables = colnames( wine )[ -n_var]
 
 unit_measures = c( 'g(tartaric_acid)/dm^3)', 'g(acetic_acid)/dm^3',
                    'g/dm^3', 'g/dm^3', 'g(sodium_chloride)/dm^3',
-                   'mg/dm^3', 'mg/dm^3', 'g/cm^3','pH', 
-                   'g(potassium_sulphate)/dm^3', '% volume')
+                   'mg/dm^3', 'mg/dm^3', 'g/cm^3','pH',
+                   'g(potassium_sulphate)/dm^3', '% volume', 'score')
 
-
-plots = lapply( X = variables, FUN = plot_density, unit = unit_measures)
+plots = list()
+for( i in 1:length(variables))
+{
+  plots[[ i ]] = plot_density( var = variables[i], unit = unit_measures[i])
+}
 
 
 # ********** Saving a file ******************* #

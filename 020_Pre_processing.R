@@ -26,12 +26,13 @@ ensureLibrary('pls')
 ensureLibrary('gam')
 ensureLibrary('dplyr')
 ensureLibrary('DT')
-
+ensureLibrary('rmarkdown')
 
 
 
 
 ### ***** SAVING FOLDER ***** ###
+dir.create( 'results' )
 
 folder = "results/EXPLORATORY_ANALYSES"
 dir.create( folder )
@@ -74,5 +75,6 @@ train.wine = wine[train.label, ]
 test.wine_binary = wine_binary[!train.label,]
 test.wine = wine[!train.label,]
 
+dir.create( 'results/MODELING/' )
 
 

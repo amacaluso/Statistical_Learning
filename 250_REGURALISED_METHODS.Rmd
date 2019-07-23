@@ -1,8 +1,8 @@
-##<a name="25_REGULARISED_METHODS" style="pointer-events: none; cursor: default;" ><font color="red"> 2.5. Regularised Methods</font></a>
+##<a name="25_REGULARISED_METHODS" style="pointer-events: none; cursor: default;" ><font color="black"> 2.5. Regularised Methods</font></a>
 
 
 
-L’idea di questi metodi è quella di regolarizzare la stima dei parametri andando a “restringerli” verso lo zero. I metodi di regolarizzazione che abbiamo preso in considerazione per questo caso sono tre: ridge regression, logistic lasso ed elastic-net. Tutti e tre fanno uso del tuning parameter $\lambda$ che influenza l’effetto della penalità, ma si differenziano per il diverso tipo di penalizzazione adottata. Nel seguito, l'addestramento del modello è condotto per cross-validation nel training set e i risultati di performance riportati sono calcolati poi sul test set.
+L’idea di questi metodi è quella di regolarizzare la stima dei parametri andando a “schiacciarli” verso lo zero. I metodi di regolarizzazione che abbiamo preso in considerazione per questo caso sono tre: ridge regression, logistic lasso ed elastic-net. Tutti e tre fanno uso del tuning parameter $\lambda$ che influenza l’effetto della penalità, ma si differenziano per il diverso tipo di penalizzazione adottata. Nel seguito, l'addestramento del modello è condotto per cross-validation nel training set e i risultati di performance riportati sono calcolati poi sul test set.
 
 La ridge regression utilizza una penalizzazione di tipo $\ell_2$ per risolvere il problema di ottimizzazione dato da:
 
@@ -10,7 +10,7 @@ $$\min_{(\beta_0,\beta)\in\mathbb{R}^{p+1}}-{\biggl[
 \frac{1}{n} \sum_{i=1}^{n}{y_i(\beta_0+x_i^T\beta)-\log{(1+\exp{(\beta_0+x_i^T\beta))}}}
 \biggr] + \lambda ||\beta||_2^2}$$
 
-Questo tipo di formula permette di restringere i valori dei parametri verso zero senza mai annullarli del tutto. Al contrario il lasso, per valori sufficientemente alti di $\lambda$���, consente di rendere nulli i valori di alcuni (o tutti) i parametri svolgendo quindi anche funzione di selezione tramite l’utilizzo della penalizzazione di tipo $\ell_1$:
+Questo tipo di formula permette di restringere i valori dei parametri verso zero senza mai annullarli del tutto. Al contrario il lasso, per valori sufficientemente alti di $\lambda$, consente di rendere nulli i valori di alcuni (o tutti) i parametri, svolgendo quindi anche funzione di selezione di variabili tramite l’utilizzo della penalizzazione di tipo $\ell_1$:
  
 $$\min_{(\beta_0,\beta)\in\mathbb{R}^{p+1}}-{\biggl[
 \frac{1}{n} \sum_{i=1}^{n}{y_i(\beta_0+x_i^T\beta)-\log{(1+\exp{(\beta_0+x_i^T\beta))}}}
@@ -23,17 +23,49 @@ $$\min_{(\beta_0,\beta)\in\mathbb{R}^{p+1}}-{\biggl[
 \biggr] + \lambda[ \alpha ||\beta||_1 + (1-\alpha)||\beta||_2^2]}$$
 
 
-```{r, fig.width=10, fig.height=4, echo=FALSE}
+
+Per tutti e tre i casi abbiamo utilizzato la 10-fold cross-validation per individuare il valore ottimale di $\lambda$ e quello di $\alpha$ nel caso di elastic-net.
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
 file = "results/MODELING/CLASSIFICATION/ply_val_elnet.Rdata"
 load( file )
 plot
 ```
 
-Per tutti e tre i casi abbiamo utilizzato la 10-fold cross validation per individuare il valore ottimale di $\lambda$ e quello di $\alpha$ nel caso di elastic-net.
+<br></br>
+<br></br>
 
-Analizzando i risultati ottenuti possiamo osservare come la ridge regression presenti il più alto valore di accuratezza e quindi inferiore test error rispetto agli altri due modelli e come tutti e tre abbiano performance inferiori rispetto alla regressione logistica. In tutti e tre i casi, infatti, i valori di $\lambda$ ottenuti sono prossimi allo zero quasi a indicare che il miglior modello potrebbe essere quello non regolarizzato. Allo stesso modo la cross-validation ha individuato per elastic-net un valore di $\alpha$ pari a 0.05 che indica che la principale penalizzazione utilizzata è quella associata alla ridge regression che in questo caso performa meglio del lasso.
+Analizzando i risultati ottenuti possiamo osservare come la ridge regression presenti il più alto valore di accuratezza e, quindi, inferiore test error rispetto agli altri due modelli. Ad ogni modo, tutti e tre hanno performance inferiori rispetto alla regressione logistica, come testimoniato per altro dal fatto che i valori di $\lambda$ ottenuti sono prossimi allo zero, quasi a indicare che il miglior modello potrebbe essere quello non regolarizzato. Allo stesso modo la cross-validation ha individuato per elastic-net un valore di $\alpha$ pari a 0.05 che indica che la principale penalizzazione utilizzata è quella associata alla ridge regression che in questo caso performa meglio del lasso.
 Per quanto riguarda l'accuratezza i risultati sono molto simili, con valori pari a, rispettivamente, 0.7305, 0.7345 e 0.7195
-Questi risultati vengono confermati anche dalle ROC e soprattutto dalle AUC. I valori sono tutti molto vicini (0.80, 0.7995 e 0.7897) ma indicano comunque che la ridge regression ha un maggior potere predittivo.
+Questi risultati vengono confermati anche dalle curve ROC e soprattutto dalle AUC. I valori sono tutti molto vicini (0.80, 0.7995 e 0.7897) ma indicano comunque che la ridge regression ha un maggior potere predittivo.
 
-Se osserviamo, però, i valori dei coefficienti, possiamo notare come la ridge regression per costruzione include tutti i parametri nell’analisi mentre il lasso permette di effettuare una selezione tra essi eliminando *fixed.acidity*, *chlorides*, *density* nonché *type* (vino bianco o rosso). Anche elastic-net, pur selezionato un valore di $\alpha$ piuttosto piccolo, permette di effettuare una selezione dei parametri eliminando, però, solamente *fixed.acidity* e *type*. Nonostante le performance del lasso siano leggermente inferiori a quelle della ridge regression, potrebbe quindi valer la pena preferire il primo agli altri due in favore di un modello più semplice e di più facile interpretazione.
+Se osserviamo, però, i valori dei coefficienti, possiamo notare come la ridge regression includa, per costruzione, tutti i parametri nell’analisi mentre il lasso permette di effettuare una selezione tra essi eliminando *fixed.acidity*, *chlorides*, *density* nonché *type*.
+Di seguito è riportato il grafico del profilo dei coefficienti stimati dai due metodi al variare della penalizzazione.
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+
+file = "results/MODELING/CLASSIFICATION/ridge_profile_plot.Rdata"
+load( file )
+plot
+```
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+
+file = "results/MODELING/CLASSIFICATION/lasso_profile_plot.Rdata"
+load( file )
+plot
+```
+
+<br></br>
+<br></br>
+
+Come è possibile notare, nel caso del ridge lo shrinkage è più smooth e i coefficienti si avvicinano più gradualmente a 0 senza tuttavia mai raggiungerlo. D'altro canto la penalizzazione lasso è più diretta e l'effetto è più marcato, causando anche l'annullamento di alcuni coefficienti da un certo punto in poi.
+Da notare il diverso effetto delle due penalizzazioni sul coefficiente di *density* (che sappiamo essere distorto dalla non standardizzazione dei dati). In entrambi i casi la stima parte da un valore molto alto per $\lambda$ piccolo e poi viene ristretto sempre più verso lo 0. Tuttavia, se nel ridge questo coefficiente rimane comunque sempre dominante rispetto agli altri, nel lasso invece esso subisce uno shrinkage repentino fino ad essere uno dei primi ad azzerarsi.
+
+Infine, anche elastic-net, pur selezionando un valore di $\alpha$ piuttosto piccolo, permette di effettuare una selezione delle variabili, eliminando però solamente *fixed.acidity* e *type*. 
+
+Nonostante le performance del lasso siano leggermente inferiori a quelle della ridge regression, potrebbe quindi valer la pena preferire il primo agli altri due in favore della maggiore semplicità ed interpretabilità di questo modello.
+
+<br></br>
+<br></br>

@@ -3,7 +3,7 @@
 ---
 title: <center> Wine Quality Dataset - Statistical Learning Report </center>
 author: <br></br> <br></br> <right> L. Clissa, A. Macaluso e L. Pestarino </right>
-date: 5 Luglio 2018
+date: 16 Luglio 2018
 output:
   html_document: default
 ---
@@ -26,48 +26,31 @@ source( '020_Pre_processing.R')
 library('ggplot2')
 library('plotly')
 library('DT')
+library(rpart.plot)
 #source( "030_DATA_VIZ_CUSTOM.R")
 ```
 
-```{r child = '130_Indice.Rmd'}
+```{r child = '505_Indice.Rmd'}
 ```
-
 
 ```{r child = '150_Introduzione.Rmd'}
 ```
 
-```{r child = '200_Classificazione.Rmd'}
+```{r child = '510_Classificazione.Rmd'}
 ```
 
-```{r child = '210_LPM.Rmd'}
+```{r child = '520_GAM.Rmd'}
 ```
 
-```{r child = '220_LDA.Rmd'}
-```
- 
-```{r child = '230_QDA.Rmd'}
+```{r child = '525_CART.Rmd'}
 ```
 
-```{r child = '240_LOGISTIC_REGRESSION.Rmd'}
-```
- 
-```{r child = '250_REGURALISED_METHODS.Rmd'}
+```{r child = '530_RF.Rmd'}
 ```
 
- 
-```{r child = '260_KNN.Rmd'}
-```
-
- 
-```{r child = '270_GAM.Rmd'}
+```{r child = '550_Conclusioni.Rmd'}
 ```
  
-```{r child = '300_Conclusioni.Rmd'}
-```
- 
- 
-
-
 
 
 
