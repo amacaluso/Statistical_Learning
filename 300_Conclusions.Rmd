@@ -1,11 +1,21 @@
 ##<a name="3_Conclusioni" style="pointer-events: none; cursor: default;" ><font color="red">3. Conclusioni</font></a>
 
-```{r, fig.width=10, fig.height=4, echo=FALSE}
+In questo report, dunque, abbiamo condotto un'analisi il cui scopo è stato quello di mettere a confronto più metodi di classificazione in un'ottica propria della data science, i.e. prendendo come metrica di paragone l'errore di previsione fuori campione. Ciononostante, abbiamo cercato di inserire di tanto in tanto anche alcuni approfondimenti più teorici che offrissero degli spunti sul funzionamento di alcuni modelli.
+
+Nello specifico, il confronto è stato condotto indagando l'utilizzo di metodi di classificazione:
+
+- lineare, i.e. *Linear Probability Model*, *Linear Discriminant Analysis*, *Logistic Regression* e le varianti regolarizzate tramite penalizzazione *Ridge*, *Lasso* ed *Elastic-net*;
+
+- non lineare, i.e. *Quadratic Discriminant Analysis*, *K-Nearest Neighbour* e *Generalised Additive Models*;
+
+Nella tabella di seguito, per ogni modello sono riportati i valori della soglia che massimizza le performance nel test set con la relativa accuratezza raggiunta, la sensibilità e la specificità ed, infine, l'AUC.
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
 file = "results/MODELING/CLASSIFICATION/ROC_best.Rdata"
 load( file )
 
-df[, 7:13] = round(df[, 7:13], 3)
+df[, -c(1,2)] = round(df[,-c(1,2)], 4)
 
 datatable(df, 
           options = list(pageLength = 9), 
@@ -13,9 +23,26 @@ datatable(df,
           class = "display")
 ```
 
+<br></br>
+<br></br>
 
-```{r, fig.width=10, fig.height=4, echo=FALSE}
+Se prendiamo in considerazione l'accuratezza del modello, possiamo notare che il modello GAM è quello che performa meglio (0.7735), seguito dal KNN (0.7512) e poi a scalare tutti i metodi lineari. Da notare che, escludendo i modelli regolarizzati, la QDA è in ultima posizione nonostante una superficie di separazione più complessa e flessibile. D'altra parte, è interessante sottolineare come il LPM si collochi sull'ultimo gradino del podio (0.7488) nonostante la sua semplicità e malgrado l'inadeguatezza teorica di rappresentare una probabilità attraverso un outcome non limitato nell'intervallo $[0,1]$. 
+In generale, questo può essere spiegato dal fatto che, in un problema di classificazione, sia importante non tanto avvicinarsi il più possibile al valore vero di probabilità di appartenenza ad una categoria, quanto piuttosto riuscire a distinguere tale classe pur introducendo una distorsione nell'outcome del modello.
+
+Guardando invece all'AUC, le performance dei vari modelli rimangono comparativamente inalterate ad eccezione del KNN che scende dal secondo al settimo posto, facendo così scalare in alto di una posizione tutti gli altri modelli.
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 file = "results/MODELING/CLASSIFICATION/roc_curve_all.Rdata"
 load( file )
 plot
 ```
+
+<br></br>
+<br></br>
+
+In conclusione, il modello GAM è quello che performa meglio di tutti sia in termini di accuratezza che di AUC, seguito a stretto giro dal KNN e dal LPM. 
+Ciononostante, le performance dei vari modelli sono molto simili tra di loro, come testimoniato dalle ROC curve molto sovrapposte rappresentate nella figura soprastante.
+Si potrebbe pensare dunque di preferire un modello più parsimonioso in modo da guadagnare in semplicità e interpretabilità a discapito di una minima perdita in prestazioni predittive.
+
+<br></br>
+<br></br>

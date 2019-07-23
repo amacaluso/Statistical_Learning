@@ -1,0 +1,89 @@
+##<a name="220_CART" style="pointer-events: none; cursor: default;" ><font color="black"> 2.2. Classification and Regression trees </font></a>
+
+
+Il secondo tipo di metodi utilizzati rientra nella categoria dei CART (Classification And Regression Tree) che fanno uso degli alberi di decisione per effettuare analisi di classificazione e/o regressione.
+
+Da un punto di vista pratico, durante la sua costruzione, questi modelli individuano una sequenza di bipartizioni in regioni $R_m$ non sovrapponibili fino a comporre una struttura ad albero fatta di *rami* e *foglie* (o *nodi terminali*), all'interno delle quali la funzione obiettivo viene approssimata tramite una costante. 
+
+$$f(x) = \sum_{m=1}^{M}c_mI(x\in  R_m)$$
+
+Nel caso preso in esame, trattandosi di un problema di classificazione, possiamo definire $c_m=p_{mk}$ come la porzione di osservazioni appartenenti alla classe *g* all'interno del nodo *m* e stimarla mediante:
+
+$$\hat{p}_{mg}=\frac{1}{N_m}\sum_{x_i\in R_m}I(y_i=g)$$
+
+Le osservazioni vengono quindi assegnate alla classe di maggioranza all'interno del nodo *m*.
+
+Per quanto riguarda la crescita, tale algoritmo produce una sequenza di *nodi* conducendo una ricerca esaustiva su tutte le partizioni di ciascun regressore, selezionando poi la variabile e lo split ottimali ad ogni step così da minimizzare una funzione d'errore opportunamente scelta (ricerca *greedy*). Per questo scopo, possibili scelte utilizzate in letteratura sono:
+
+- errore di classificazione
+
+- indice di Gini
+
+- indice di entropia di Shannon
+
+Nel prosieguo è stato adottato l'indice di Gini come funzione di perdita nella crescita dell'albero per via della sua capacità di discriminare correttamente situazioni in cui l'errore di classificazione è il medesimo, preferendo lo split che porta a dei nodi più *puri*:
+
+$$Q_m(T)=\sum_{g\neq g'}\hat{p}_{mg}\hat{p}_{mg'}=\sum_{g=1}^G\hat{p}_{mg}(1-\hat{p}_{mg}) $$
+
+
+Il numero di split da effettuare rientra tra i parametri del modello che vanno ottimizzati. La strategia più comunemente suggerita in letteratura è quella di far crescere un albero molto grande tramite l'imposizione di limiti piuttosto blandi per poi effettuare una potatura a seconda di una funzione di costo-complessità:
+
+$$C_\alpha = \sum_{m=1}^{|T|}{N_m Q_m(T) + \alpha |T|}$$
+dove:
+
+- $T$ indica un sottoalbero contenuto nell'albero massimale, $T \subset T_{max}$, e $|T|$ rappresenta il numero di foglie in esso presenti
+
+- $N_m$ rappresenta il numero di osservazioni presenti nella regione $R_m$
+
+- $\alpha$ rappresenta il parametro di penalizzazione della complessità
+
+Passando all'applicazione, i risultati di ottimizzazione di questa funzione sono riportati nel seguente grafico in cui sono rappresentati gli andamenti dell'errore di classificazione nel campione di training (in rosso) e una stima dell'errore di previsione ottenuta per cross validation (blu).
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/tree_val.Rdata"
+load( file )
+plot
+
+```
+
+
+<br></br>
+<br></br>
+
+Il valore ottimale per $\alpha$ è risultato essere pari a 0.0031 (26 nodi terminali), tuttavia applicando il criterio empirico della *one-standard error rule* è stato possibile selezionare un albero *equivalente*, ma con solamente 9 foglie e, quindi, di più facile interpretazione. 
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+
+file = 'results/MODELING/CLASSIFICATION/tree2plot.Rdata' 
+load(file)
+#rpart.plot(tree2plot, type=3, extra=10, branch.lty=10, box.palette="RdYlGn") #, main = Title
+rpart.plot(tree2plot, type=4)
+```
+
+<br></br>
+<br></br>
+
+Guardando alla successione di split dell'albero così costruito, è dunque possibile osservare come le  variabili più importanti siano *alcohol* e *volatile.acidity* dal momento che sono le uniche due a presentarsi, in maniera alterna, nei primi split.
+
+Seguendo un approccio un po' più formale, possiamo invece associare a ciascuna variabile una vera e propria misura di quanto ogni regressore sia importante nella costruzione dell'albero. Per fare questo basta misurare tramite cross validation il decremento medio nell'accuratezza previsiva del modello in una fold in cui i valori di un regressore per volta vengono permutati casualmente tra tutte le unità statistiche. In questo modo, tanto più l'incremento dell'errore sarà maggiaro, tanto più l'importanza della variabile sarà limitata. 
+Il risultato di tale procedura è mostrato nella figura seguente:
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+file = "results/MODELING/CLASSIFICATION/plot_importance_tree.Rdata"
+load( file )
+plot
+```
+
+<br></br>
+<br></br>
+
+Come già osservato precedentemente, *alcohol* e *volatile.acidity* sono tra le variabili più importanti (rispettivamente prima e quarta). Tuttavia, in questo modo riusciamo ad apprezzare il ruolo svolto anche da *density* e *chlorides* nonostante compaiano solamente in bipartizioni finali.
+
+Una volta costruito l'albero è stato poi possibile valutarne le performance in termini di accuracy (0.7478) e AUC (0.7794). I valori ottenuti risultato buoni e solamente di poco inferiori a quelli relativi al GAM, ma hanno permesso la costruzione di un modello molto semplice e di facile interpretazione.
+
+<br></br>
+<br></br>
+
+
+<br></br>
+<br></br>

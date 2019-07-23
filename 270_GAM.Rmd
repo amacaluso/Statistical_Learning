@@ -1,18 +1,27 @@
-##<a name="27_GAM" style="pointer-events: none; cursor: default;" ><font color="red"> 2.7. Generalised Additive Models</font></a>
+##<a name="27_GAM" style="pointer-events: none; cursor: default;" ><font color="black"> 2.7. Generalised Additive Models</font></a>
 
 
-I GAM sono modelli di tipo additivo che consentono di superare il vincolo di non linearità tramite l’introduzione di funzioni più flessibili nei regressori. Nel caso di classificazione binaria la forma assunta da un modello di tipo additivo è la seguente: 
+I GAM sono modelli di tipo additivo che consentono di superare il vincolo di linearità tramite l’introduzione di funzioni più flessibili dei regressori. Nel caso di classificazione binaria la forma assunta dal modello è la seguente: 
 
 $$\log{ \biggl( \frac{P(Y=1|X)}{1-P(Y=1|X) }  \biggr)}=\alpha + \sum_{k=1}^p{f_k(X)}$$
 
 
-Nel caso preso in esame le funzioni utilizzate sono quelle di tipo smoothing spline e abbiamo fatto uso della 10-fold cross validation per selezionare il valore ottimale dei gradi di libertà utilizzando una ricerca a griglia con df da 1 a 4. Il valore selezionato è pari a 4.
-Possiamo osservare dai valori di accuratezza/test error che il modello così costruito presenta la miglior capacità predittiva rispetto agli altri finora analizzati con un’accuratezza dello 0.7658 confermata altresì dall’AUC di 0.8288.
+Nel caso preso in esame le funzioni utilizzate sono quelle di tipo smoothing spline e abbiamo fatto uso della 10-fold cross validation per selezionare il valore ottimale dei gradi di libertà utilizzando una grid-search con df da 1 a 10. Il valore ottimale selezionato dall'algoritmo è 7, con un'accuratezza di 0.7735 e un AUC di 0.8305. 
 
-```{r, fig.width=10, fig.height=4, echo=FALSE}
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
 file = "results/MODELING/CLASSIFICATION/ply_val_gam.Rdata"
 load( file )
 plot
 ```
 
+
+
+<br></br>
+<br></br>
+
+Tuttavia il miglioramento introdotto dalla maggiore complessità è minimo, per questa ragione si potrebbe pensare di scegliere df=4 dal momento che corrisponde ad una spline cubica naturale ed è soggetto a minor variabilità.
+
+<br></br>
+<br></br>

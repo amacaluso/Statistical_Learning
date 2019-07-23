@@ -34,6 +34,8 @@ qda.fit
 # Predict the qda fit on the test sample
 qda.pred = predict(qda.fit, newdata = test.wine_binary)
 
+test_accuracy <- mean(qda.pred$class==test.wine_binary$binary_quality)
+test_accuracy
 
 # Test set ROC curve and AUC.
 pred_qda = prediction(qda.pred$posterior[ ,2], test.wine_binary$binary_quality)
@@ -43,7 +45,7 @@ auc = as.numeric(performance(pred_qda, "auc")@y.values)
 
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
-ROC_qda = cbind( Model = 'Quadratic_Discriminant_Analysis', 
+ROC_qda = cbind( Model = 'Quadratic Discriminant Analysis',
                  ROC_analysis( prediction = qda.pred$posterior[,2], 
                                y_true = test.wine_binary$binary_quality,
                                probability_thresholds = tresholds),
@@ -102,7 +104,7 @@ auc = as.numeric(performance(pred_logistic, "auc")@y.values)
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
 
-ROC_log = cbind( Model = 'Logistic_Regression', 
+ROC_log = cbind( Model = 'Logistic Regression', 
                  ROC_analysis( prediction = glm.probs, 
                                y_true = test.wine_binary$binary_quality,
                                probability_thresholds = tresholds), 
@@ -176,7 +178,7 @@ auc = as.numeric(performance(pred_ridge, "auc")@y.values)
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
 
-ROC_ridge = cbind( Model = 'Regularized_Logistic_Regression', 
+ROC_ridge = cbind( Model = 'Ridge',  
                  ROC_analysis( prediction = pred_ridge@predictions[[1]], 
                                y_true = test.wine_binary$binary_quality,
                                probability_thresholds = tresholds),
@@ -202,6 +204,31 @@ roc_curve_ridge = ggplot(ROC_matrix_ridge, aes(x = FPR, y = TPR, label = treshol
 
 roc_curve_ridge = ggplotly( roc_curve_ridge )
 save_plot( roc_curve_ridge, type = 'CLASSIFICATION')
+
+
+
+### plot profile ###
+ridge = glmnet(x.train, y.train, alpha = 0, family = "binomial")
+lambda = ridge$lambda
+coeffs = as.matrix( ridge$beta)
+coeffs = t(coeffs)
+n_col = ncol(coeffs)
+df = melt(coeffs)
+df = cbind( df, lambda = rep(lambda, n_col))
+colnames(df) = c( "s", "Variable", "Coefficient", "lambda")
+df = df[ df$lambda<10, ]
+# df = df[df$Variable != 'density', ]
+
+ridge_profile_plot = ggplot(data = df, aes( x = lambda, y = Coefficient, color = Variable)) +
+  geom_line() +
+  ggtitle( "Profile - Ridge" ) +
+  theme(plot.title = element_text(size = 15, face = "bold"))
+# ridge_profile_plot = ggplotly( ridge_profile_plot )
+ridge_profile_plot = ggplotly( ridge_profile_plot ) %>% 
+  layout(
+    xaxis = list(range = c(-0.01,10)), 
+    yaxis = list(range = c(-15, 5)))
+save_plot( ridge_profile_plot, type = 'CLASSIFICATION')
 ################################################
 
 
@@ -224,7 +251,7 @@ auc = as.numeric(performance(pred_lasso, "auc")@y.values)
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
 
-ROC_lasso = cbind( Model = 'Regularized_Logistic_Regression (LASSO)', 
+ROC_lasso = cbind( Model = 'Lasso',
                    ROC_analysis( prediction = pred_lasso@predictions[[1]], 
                                  y_true = test.wine_binary$binary_quality,
                                  probability_thresholds = tresholds),
@@ -250,6 +277,30 @@ roc_curve_lasso = ggplot(ROC_matrix_lasso, aes(x = FPR, y = TPR, label = treshol
 
 roc_curve_lasso = ggplotly( roc_curve_lasso )
 save_plot( roc_curve_lasso, type = 'CLASSIFICATION')
+
+
+##### PLOT PROFILE #######
+lasso = glmnet(x.train, y.train, alpha = 1, family = "binomial")
+lambda = lasso$lambda
+coeffs = as.matrix( lasso$beta)
+coeffs = t(coeffs)
+n_col = ncol(coeffs)
+df = melt(coeffs)
+df = cbind( df, lambda = rep(lambda, n_col))
+colnames(df) = c( "s", "Variable", "Coefficient", "lambda")
+df = df[ df$lambda<.2, ]
+# df = df[df$Variable != 'density', ]
+
+lasso_profile_plot = ggplot(data = df, aes( x = lambda, y = Coefficient, color = Variable)) +
+                      geom_line() +
+                      ggtitle( "Profile - Lasso" ) +
+                      theme(plot.title = element_text(size = 15, face = "bold"))
+lasso_profile_plot = ggplotly( lasso_profile_plot ) %>% 
+  layout(
+    xaxis = list(range = c(-0.01,.2)), 
+    yaxis = list(range = c(-10, 5)))
+save_plot( lasso_profile_plot, type = 'CLASSIFICATION')
+
 #################################################
 #rm(list=setdiff(ls(), c("test_error", 'ROC_all')))
 
@@ -342,14 +393,15 @@ gam_validation = ggplot(data = gam_data, aes( x = df)) +
                  geom_point( aes( y = Accuracy, color = 'red' ), show.legend = F) + 
                  geom_ribbon(aes(ymin=Accuracy-AccuracySD, ymax=Accuracy+AccuracySD), linetype=2, alpha=0.1) +
                  ggtitle( "Validazione parametri GAM" ) +
-                 theme(plot.title = element_text(size = 15, face = "bold"))
+                 theme(plot.title = element_text(size = 15, face = "bold")) + 
+                 scale_x_continuous(breaks=1:10)
 
 ply_val_gam = ggplotly( gam_validation ) %>%
-              layout(title = "Validazione parametri GAM",
-                   legend = list(orientation = "v")) # , y = 0, x = 0))
+                layout(title = "Validazione parametri GAM", showlegend = F)
+                   # legend = list(orientation = "v")) # , y = 0, x = 0))
 save_plot( ply_val_gam, type = "CLASSIFICATION")
 
-ROC_gam = cbind( Model = 'Generalize Additive Model', 
+ROC_gam = cbind( Model = 'Generalised Additive Model', 
                    ROC_analysis( prediction = gam.probs[, 2], 
                                  y_true = test.wine_binary$binary_quality,
                                  probability_thresholds = tresholds),
@@ -394,7 +446,7 @@ knn_fit <- train(binary_quality~., data = data, method = "knn",
                  preProcess = c("center", "scale"),
                  tuneLength = 100)
 
-plot(knn_fit)
+plot(knn_fit,xlab="# Neighbours")
 
 cv_df = knn_fit$results
 cv_df$Accuracy_lower = cv_df$Accuracy - cv_df$AccuracySD
@@ -436,7 +488,7 @@ auc = as.numeric(performance(pred_lasso, "auc")@y.values)
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
 
-ROC_knn = cbind( Model = 'K nearest neighbor', 
+ROC_knn = cbind( Model = 'K nearest neighbour', 
                  ROC_analysis( prediction = knn_probs, 
                                y_true = test.wine_binary$binary_quality,
                                probability_thresholds = tresholds),
@@ -474,6 +526,11 @@ ROC_best = ROC_all %>%
                     group_by(Model) %>%
                     slice(which.max(`Accuracy: true/total`))
 
+ROC_best = remove_columns_by_names( ROC_best, colNames = c( "(y=1,y_hat=1) TP" , "(y=1,y_hat=0) FN",
+                                                            "(y=0,y_hat=1) FP", "(y=0,y_hat=0) TN",
+                                                            "Positive Predictive Value: TP/predicted_positive",
+                                                            "Positive Likelihood Ratio", "F1_SCORE" ))
+
 # ********** Saving file ******************* #
 save_table( ROC_best, type = 'CLASSIFICATION')
 ################################################
@@ -482,18 +539,6 @@ save_table( ROC_best, type = 'CLASSIFICATION')
 ######################################
 ROC_all$FPR = 1 - ROC_all$`Specificity: TN/negative`
 ROC_all$TPR = ROC_all$`Sensitivity (AKA Recall): TP/positive`
-
-roc_curve_all = ggplot( ROC_all, aes(x = round(FPR,3), y = round(TPR,3), label = probability_thresholds, text = Model), alpha = 0.2) +
-                        geom_line(data = subset(ROC_all, Model == 'Linear_Probability_Model'), col = 2) +
-                        geom_line(data = subset(ROC_all, Model == 'Linear_Discriminant_Analysis'), col = 3) +
-                        geom_line(data = subset(ROC_all, Model == 'Quadratic_Discriminant_Analysis'), col = 4) +
-                        geom_line(data = subset(ROC_all, Model == 'Logistic_Regression'), col = 5) +
-                        geom_line(data = subset(ROC_all, Model == 'Regularized_Logistic_Regression'), col = 6) +
-                        geom_line(data = subset(ROC_all, Model == 'Regularized_Logistic_Regression (LASSO)'), col = 7) +
-                        geom_line(data = subset(ROC_all, Model == 'K nearest neighbor'), col = 8) +
-                        geom_line(data = subset(ROC_all, Model == 'Elastic Net'), col = 9) +
-                        geom_line(data = subset(ROC_all, Model == 'Generalize Additive Model'), col = 10) +
-                        ggtitle( "ROC ANALYSIS ALL")  
 
 
 roc_curve_all = ggplot(data = ROC_all, aes( x = FPR, y = TPR, color = Model, 

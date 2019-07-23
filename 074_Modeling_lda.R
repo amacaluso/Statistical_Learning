@@ -70,7 +70,7 @@ lda.pred1 = predict(lda.fit, newdata = train.wine_binary) #train
 intersection = (mean(lda.pred1$x[train.wine_binary$binary_quality==0])+
                   mean(lda.pred1$x[train.wine_binary$binary_quality==1]))/2 
 
-
+test_accuracy <- mean(lda.pred$class==test.wine_binary$binary_quality)
 
 # Predict the lda fit on the test sample
 
@@ -93,6 +93,7 @@ save_plot( lda_hist_1_vs_0, type = "CLASSIFICATION")
 
 
 lda_line_1_vs_0 = ggplot(lda_pred_ts, aes( x = prob, y = ..density.. )) +
+                  labs(x = "Discriminant score") + 
                   geom_density(data = subset(lda_pred_ts, label == 'bad'), fill = "red", alpha = 0.2) +
                   geom_density(data = subset(lda_pred_ts, label == 'good'), fill = "blue", alpha = 0.2) +
                   ggtitle( "Bad vs Good") + 
@@ -199,9 +200,9 @@ canonical_variable = ggplot(canonic_var, aes( x = index, y= can_var )) +
                      geom_point(data = subset(canonic_var, label == 'bad'), col = "green", alpha = 0.5) +
                      geom_point(data = subset(canonic_var, label == 'good'), col = "red", alpha = 0.5) +
                      ggtitle( "Canonical variable") +
-                     geom_hline( yintercept = y.mean.good, col="blue", lty = 2, lwd = 1 ) +
-                     geom_hline( yintercept = y.mean.bad, col = "yellow", lty = 2, lwd = 1) + 
-                     geom_hline( yintercept = (y.mean.good+y.mean.bad)/2, col = "black", lty = 2, lwd = 1)
+                     geom_hline( yintercept = y.mean.good, col="forestgreen", lty = 4, lwd = .8 ) +
+                     geom_hline( yintercept = y.mean.bad, col = "firebrick4", lty = 4, lwd = .8) + 
+                     geom_hline( yintercept = (y.mean.good+y.mean.bad)/2, col = "black", lty = 5, lwd = .9)
 
 
 
@@ -222,7 +223,7 @@ canonical_variable2 = ggplot(canonic_var, aes( x = index, y= can_var )) +
                       geom_point(data = subset(canonic_var, label == 'bad'), col = "green", alpha = 0.5) +
                       geom_point(data = subset(canonic_var, label == 'good'), col = "red", alpha = 0.5) +
                       ggtitle( "Canonical variable" ) +
-                      geom_hline( yintercept = (y.mean.good+y.mean.bad)/2, col="black", lty = 2, lwd = 1 ) 
+                      geom_hline( yintercept = (y.mean.good+y.mean.bad)/2, col="black", lty = 5, lwd = .9 ) 
 
 canonical_variable2 = ggplotly( canonical_variable2 )
 canonical_variable2
@@ -239,6 +240,7 @@ pred_good = data.frame( label = 'good', prob = Y[which(train.wine_binary[,13]==0
 pred = rbind( pred_bad, pred_good )
 
 lda_hist = ggplot(pred, aes( x = prob, y = ..density.. )) +
+           labs(x = "Discriminant score") + 
            geom_histogram(data = subset(pred, label == 'bad'), 
                           col = "green", alpha = 0.2) +
            geom_histogram(data = subset(pred, label == 'good'), 
@@ -278,7 +280,7 @@ auc = c(as.numeric(performance(pred_lda, "auc")@y.values))
 
 
 tresholds<-seq( from = 0, to = 1, by = 0.01)
-ROC_lda = cbind( Model = 'Linear_Discriminant_Analysis', 
+ROC_lda = cbind( Model = 'Linear Discriminant Analysis', 
                  ROC_analysis( prediction = lda.pred$posterior[,2], 
                                y_true = test.wine_binary$binary_quality,
                                probability_thresholds = tresholds))
