@@ -1,4 +1,4 @@
-##<a name="3_Conclusioni" style="pointer-events: none; cursor: default;" ><font color="red">3. Conclusioni</font></a>
+##<a name="3_Conclusion" style="pointer-events: none; cursor: default;" ><font color="red">3. Conclusion</font></a>
 
 In questo report, dunque, abbiamo condotto un'analisi il cui scopo è stato quello di mettere a confronto più metodi di classificazione in un'ottica propria della data science, i.e. prendendo come metrica di paragone l'errore di previsione fuori campione. Ciononostante, abbiamo cercato di inserire di tanto in tanto anche alcuni approfondimenti più teorici che offrissero degli spunti sul funzionamento di alcuni modelli.
 
