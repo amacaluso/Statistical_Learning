@@ -1,18 +1,21 @@
-##<a name="21_LPM" style="pointer-events: none; cursor: default;" ><font color="black"> 2.1. Linear Probability Model</font></a>
+<h2><a name="21_LPM" style="pointer-events: none; cursor: default;" ><font color="black"> 2.1. Linear Probability Model</font></a>
+</h2>
+The regression model defines the linear discriminant function, $\delta(x)$, as the expected value of the target conditioning on the observed data, $E[Y|X]$. In case of a dichotomous outcome, this is equivalent to estimating the probability for an observation to belong to category 1, $P(Y=1|X)$, hence the name linear probability model.
+However $E[Y|X]$ is by construction a real number, so it lends poorly in estimating a quantity that lies between 0 and 1. Nonetheless, it is possible to show that the sum of the probabilities to belong to every single class is 1.
 
-Il modello di regressione si inserisce nel contesto dei metodi di classificazione che si basano sulla definizione di una funzione descriminante, $\delta_k(x)$, dalla quale poi viene derivata l'appartenenza di una osservazione ad una particolare classe. In particolare, la soluzione proposta da questa tecnica è quella di scegliere come funzione discriminante $E[Y|X]$ che, vista la natura dicotomica del problema (i.e. una osservazione o appartiene o non appartiene ad una data modalità), equivale alla probabilità di appartenenza ad una generica classe g, $P(Y=g|X)$.
-
-In generale, immaginando di avere un problema di classificazione multinomiale ($G$ modalità) con $p$ regressori, questo approccio consiste nell'adottare un modello di regressione lineare in cui la variabile risposta **Y** è una matrice di variabili indicatrici, ciascuna avente valore 1 se l'osservazione appartiene alla relativa modalità della variabile di output e 0 altrimenti.
-Nel caso specifico di una classificazione binaria, possiamo tuttavia adattare un solo modello al dataset di training ed utilizzarlo per calcolare uno score che servirà poi per classificare ciascuna osservazione in base ad un dato threshold (da determinare). Si noti che lo score calcolato sarà per costruzione un numero reale e, quindi, malgrado lo si utilizzi per modellare la probabilità di appartenenza ad una classe - di qui il nome Linear Probability Model (LPM) -, non è possibile interpretarlo come una probabilità. Tuttavia, è possibile dimostrare che sommando gli score di una singola osservazione ottenuti dai modelli relativi a ciascuna modalità il risultato è 1. Infatti:
+To see why this is true, consider the general case of a multinomial classification problem (G categories) based on *p* regressors.
+Then, the LPM approach consists of adopting G binary regression models simultaneously, one per each class. The issue then resolves to estimating the probability of belonging to each category and classifying the observation as the class which returns the highest response.
+In matricial form:
 
 $$
 \hat{Y}_{n \times G} = X_{n \times (p+1)} ({X}^{T} X)_{(p+1) \times (p+1)}^{-1} {X}_{(p+1) \times n}^{T}  Y_{n \times G}$$
 
-Post-moltiplicando poi per un vettore colonna G-dimensionale formato da soli 1, possiamo sommare gli elementi di $\hat{Y}$:
+
+Post-multiplying by a G-dimensional column vector of ones we can then sum the elements of $\hat{Y}$:
 
 $$\hat{Y}_{n \times G}  \textbf{1}_{G \times 1} = X_{n \times (p+1)}  ({X}^{T} X)_{(p+1) \times (p+1)}^{-1}  {X}_{(p+1) \times n}^{T}  Y_{n \times G}  \textbf{1}_{G \times 1}$$
 
-A questo punto, pre-moltiplicando a destra per la matrice identità di ordine $n$ ottenuta come $(X {X}^{T})^{-1}(X {X}^{T})$, è facile verificare che l'equazione precedente si riduce semplicemente a:
+Now, pre-multiplying the identity matrix of order $n$ written as $(X {X}^{T})^{-1}(X {X}^{T})$, it is easy to verify that the previous equation resolves to:
 
 $$(X {X}^{T})^{-1}(X {X}^{T})  X_{n \times (p+1)}  ({X}^{T} X)_{(p+1) \times (p+1)}^{-1}  {X}_{(p+1) \times n}^{T}  Y_{n \times G}  \textbf{1}_{G \times 1}$$
 
@@ -22,11 +25,11 @@ $$\biggl[(X {X}^{T})^{-1}X  {X}_{(p+1) \times n}^{T}\biggr]  Y_{n \times G}  \te
 
 $$\hat{Y}_{n \times G}  \textbf{1}_{G \times 1} = Y_{n \times G}  \textbf{1}_{G \times 1}$$
 
-Per cui si ricava che la somma degli score predetti è 1 per ciascuna osservazioni dal momento che le funzioni indicatrici (RHS) vale $\hat{Y_1}+ ... + \hat{Y_G} = 1$ per costruzione.
+Hence the sum of the predicted scores is 1 for all the observations. In fact, $\hat{Y_1}+ ... + \hat{Y_G} = 1$ by construction.
 
-Per cui, malgrado gli score non siano probabilità, sono accomunate ad esse da questa proprietà.
+For this reason, although it is not possible to interpret the predicted scores as probabilities, they share this property.
 
-Passando all'applicazione, è facile verificare come lo score predetto dal modello non è in generale compreso tra 0 e 1, come si evince dal seguente grafico.
+Passing to the application, we adopted such a model considering all of the initial regressors. It is easy to verify as, in general, the score of such models is not guaranteed to lie between 0 and 1, as anticipated:
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 file = "results/MODELING/CLASSIFICATION/lpm_probs.Rdata"
@@ -53,7 +56,9 @@ datatable(df,
 <br></br>
 <br></br>
 
-Se ci focalizziamo sulle stime dei coefficienti invece, è possibile notare come la variabile che sembra contare di più nella previsione è *density*. Tuttavia, l'alto valore di questo coefficiente (-36.12) sembra bilanciarsi sia in termini di stima che di variabilità con quello dell'intercetta. Questo comportamento è dovuto al fatto che la variabile sia molto più concentrata delle altre ed è anche correlata con l'output, per cui una minima variazione del suo valore è associata ad un grande cambiamento nel valore predetto. Infatti, eliminando questo effetto tramite standardizzazione, la stima per *density* sembra più in linea con gli ordini di grandezza degli altri coefficienti e le variabili che incidono maggiormente diventano *volatile.acidity*, *alcohol* e *type* (rispettivamente -0.15, 0.14 e - 0.13). A seguito della trasformazione non variano, invece, i risultati di significatività.
+Focusing on the estimates for the coefficients, it is possible to notice as the most relevant variable for the prediction seems to be *density*.  However, the high value of this coefficient (-36.12) appears balanced by the intercept, both in terms of punctual estimate and variability. 
+This behaviour is due to the feature having a dense distribution which is highly correlated to the target. Thus, each slight variation of its value is associated with a significant change in the predicted outcome.
+This guess is confirmed when performing the analysis with standardised variables. In fact, this time the coefficient for *density* is much more in line with the other estimates. Also, the most relevant features become *volatile.acidity*, *alcohol* and *type* (respectively -0.15, 0.14 and - 0.13). No changes in the patterns of significance are observed though.
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
@@ -69,19 +74,18 @@ datatable(df,
 <br></br>
 <br></br>
 
-Una volta ottenuti i valori predetti, per poter classificare le osservazioni in una delle due classi è necessario poi fissare un taglio sulla previsione del modello che funga da separatore delle due classi. La scelta di questa soglia non è tuttavia così intuitiva come in altri modelli, proprio perchè l'outcome non è vincolato all'intervallo $[0,1]$. Per questa ragione, la scelta del threshold ottimale è stata fatta sulla base di una *grid-search* in modo da minimizzare l'errore di classificazione nel test set. In particolare, abbiamo provato una griglia di valori da 0 a 1 con gap di 0.01 ed è risultata ottimale la classificazione relativa ad una soglia di 0.54.
+Once a score has been obtained, it is then necessary to fix a cutoff so to classify each observation into one of the two categories. This choice is not that obvious, as the outcome of the model is not bounded in $[0,1]$. For this reason, the choice of the optimal threshold is don based on a grid search so to minimise the misclassification error. In particular, using cutoff values between 0 and 1 with gaps of 0.01, the optimal choice for the threshold is 0.54.
 
-Una volta scelto il taglio ottimale con l'ausilio del test set, non è più possibile utilizzare quegli stessi dati per dare una misura della capacità di generalizzazione del modello. Infatti, la misura così calcolata esprimerebbe una sovrastima dell'accuratezza dal momento che il test set è stato già dato in pasto al modello per ottimizzare il threshold. 
-Per evitare ciò, abbiamo ricavato una stima dell'abilità previsiva per Leave One Out cross-validation sfruttando il fatto che, nel caso di regressione lineare con funzione di perdita quadratica, è possibile calcolare questa misura stimando una sola volta il modello anzichè $n$:
+Having used the test set for choosing the optimal cutoff, it is no longer possible to use them to evaluate the performances of the model without overestimating due to overfitting. For this reason, the prediction error is retrieved based on Leave One Out cross-validation. In particular, for a linear regression with quadratic loss it is possible to compute this measure estimating the model just one time instead of $n$:
 
 $$ GCV = \frac{1}{n} \sum_{i=1}^{n} { \biggl[ \frac{ y_i - \hat{f}(x_i) }
 {1- \frac{trace(S)}{n}} \biggr]^2 } $$
 
-dove $trace(S)$ rappresenta il numero di gradi di libertà effettivi del modello (nel nostro caso $p+1=13$)
+where $trace(S)$ represents the effective degrees of freedom of the model (in our case $p+1=13$).
 
-Si noti che, malgrado la misura di performance di interesse non sia una funzione di perdita quadratica, è facile verificare come in questo caso essa coincida proprio con l'errore di classificazione per via della natura dicotomica di $y_i$ e $\hat{f}(x_i)$.
+Notice that,  despite our loss not being a quadratic function, it is easy to show that it is equivalent to the misclassification error due to the dichotomic nature of $y_i$ and $\hat{f}(x_i)$. Hence, the approach described above is justified.
 
-In conclusione, l'accuratezza ottenuta attraverso la Generalised cross-validation è di 0.7402 (a fronte del 0.7488 calcolato nel test set che rappresenta, come previsto, una stima ottimistica). In termini di  Receiver Operating Characteristic (ROC) curve, invece, il modello presenta un Area Under Curve (AUC) di 0.8095. 
+In conclusion, the accuracy obtained through the Generalised cross-validation is  0.7402 (instead of the 0.7488 computed in the test set, which is an optimistic estimate as expected). In terms of Receiver Operating Characteristic (ROC) curve, instead, the model has an Area Under Curve (AUC) of 0.8095.
 
 
 <br></br>

@@ -1,12 +1,12 @@
-##<a name="27_GAM" style="pointer-events: none; cursor: default;" ><font color="black"> 2.7. Generalised Additive Models</font></a>
+<h2><a name="27_GAM" style="pointer-events: none; cursor: default;" ><font color="black"> 2.7. Generalised Additive Model</font></a></h2>
 
 
-I GAM sono modelli di tipo additivo che consentono di superare il vincolo di linearità tramite l’introduzione di funzioni più flessibili dei regressori. Nel caso di classificazione binaria la forma assunta dal modello è la seguente: 
+The GAMs are additive models that enable to overcome the linearity constraint trough the introduction of more flexible functions of the regressors. In the case of binary classification, we can write such a model as follows: 
 
 $$\log{ \biggl( \frac{P(Y=1|X)}{1-P(Y=1|X) }  \biggr)}=\alpha + \sum_{k=1}^p{f_k(X)}$$
 
 
-Nel caso preso in esame le funzioni utilizzate sono quelle di tipo smoothing spline e abbiamo fatto uso della 10-fold cross validation per selezionare il valore ottimale dei gradi di libertà utilizzando una grid-search con df da 1 a 10. Il valore ottimale selezionato dall'algoritmo è 7, con un'accuratezza di 0.7735 e un AUC di 0.8305. 
+As far as our application is concerned, we consider smoothing splines as transformations of the input features. The optimal degrees of freedom for these functions are selected by 10-fold cross-validation, with a grid search in the range $[1,10]$. The best model turns out to be the one with 7 degrees of freedom, achieving an accuracy of 0.7735 e and an AUC equal to 0.8305. 
 
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
@@ -21,7 +21,7 @@ plot
 <br></br>
 <br></br>
 
-Tuttavia il miglioramento introdotto dalla maggiore complessità è minimo, per questa ragione si potrebbe pensare di scegliere df=4 dal momento che corrisponde ad una spline cubica naturale ed è soggetto a minor variabilità.
+Nonetheless, the improvement introduced by this greater complexity is minimal, so it may be worth simplifying the model in favour of a more parsimonious one. For this reason, one may wish to select $df=4$ since it corresponds to a natural cubic spline and it is subject to lower variability.
 
 <br></br>
 <br></br>
