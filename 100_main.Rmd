@@ -1,11 +1,10 @@
-
-
 ---
 title: <center> Wine Quality Dataset - Statistical Learning Report </center>
 author: <br></br> <br></br> <right> L. Clissa, A. Macaluso e L. Pestarino </right>
 date: 5 July 2018
-output:
-  html_document: default
+output: 
+  html_document:
+   default
 ---
 
 <style>

@@ -1,4 +1,4 @@
-##<a name="3_Conclusion" style="pointer-events: none; cursor: default;" ><font color="red">3. Conclusion</font></a>
+<h2><a name="3_Conclusion" style="pointer-events: none; cursor: default;" ><font color="red">3. Conclusion</font></a></h2>
 
 n this report, we have conducted a classification analysis and we have compared many different approaches to this end, in a view typical of the data science field: selecting the model that guarantees the best out-of-samples predictions.
 Nonetheless, theoretical insights on the statistical properties of several models have also been treated.

@@ -1,4 +1,4 @@
-##<a name="Index" style="pointer-events: none; cursor: default;" ><font color="black" ><font color="black">Index</font></font></a>
+<h2><a name="Index" style="pointer-events: none; cursor: default;" ><font color="black" ><font color="black">Index</font></font></a></h2>
 
 <a href="#1_Introduction" ><font color="black">1. Introduction</font></a>
 
