@@ -1,5 +1,4 @@
 # Statistical Learning
-
 This repository is intended to provide a slideshow of classification models, with a focus on the statistical properties of each approach. Specifically, a wide variety of both linear and non-linear methods are adopted and the compared, ranging from **Linear Probability Model** and **Logistic Regression** to **Quadratic Discriminant Analysis** and **Generalised Additive Models**.
 
 In order to do that, the wine quality dataset is considered. For more information, please refer to [https://archive.ics.uci.edu/ml/datasets/wine+quality](https://archive.ics.uci.edu/ml/datasets/wine+quality).
