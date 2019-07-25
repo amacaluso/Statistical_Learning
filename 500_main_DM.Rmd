@@ -30,13 +30,13 @@ library(rpart.plot)
 #source( "030_DATA_VIZ_CUSTOM.R")
 ```
 
-```{r child = '505_Indice.Rmd'}
+```{r child = '505_Index.Rmd'}
 ```
 
-```{r child = '150_Introduzione.Rmd'}
+```{r child = '150_Introduction.Rmd'}
 ```
 
-```{r child = '510_Classificazione.Rmd'}
+```{r child = '510_Classification.Rmd'}
 ```
 
 ```{r child = '520_GAM.Rmd'}
@@ -48,7 +48,7 @@ library(rpart.plot)
 ```{r child = '530_RF.Rmd'}
 ```
 
-```{r child = '550_Conclusioni.Rmd'}
+```{r child = '550_Conclusion.Rmd'}
 ```
  
 
