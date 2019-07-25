@@ -78,7 +78,7 @@ Although correlation does not mean causation, it makes sense to explore the depe
 
 For this purpose, the correlation matrix computed on the whole dataset is reported below:
 
-```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+```{r, fig.width=9.5, fig.height=6, echo=FALSE}
 file = "results/EXPLORATORY_ANALYSES/corrplot.Rdata"
 load( file )
 corrplot
