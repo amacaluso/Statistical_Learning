@@ -1,8 +1,9 @@
-##<a name="23_QDA" style="pointer-events: none; cursor: default;" ><font color="black"> 2.3. Quadratic Discriminant Analysis</font></a>
+<h2><a name="23_QDA" style="pointer-events: none; cursor: default;" ><font color="black"> 2.3. Quadratic Discriminant Analysis</font></a></h2>
 
-Se facciamo cadere l'assunzione di omoschedasticità dei gruppi, l'approccio di analisi discriminante produce un funzione discriminante quadratica e, di conseguenza, anche la superficie di separazione non sarà più lineare.
+If we drop the assumption of homoscedasticity of the groups, a discriminant analysis approach produce a discriminant function which is quadratic and, in turn, also the separation surface is no longer linear.
 
-Nonostante l'utilizzo di una superficie di separazione più complicata, questo modello non riesce tuttavia a migliorare le prestazioni di previsione dell'analisi discriminante lineare. Al contrario, le performance sono inferiori sia in termini di accuratezza che di AUC (rispettivamente 0.7322 e 0.8055).
+
+Despite using a more complex separation surface, this model achieves worse performances than the LDA, with accuracy and AUC of 0.7322 and 0.8055 respectively.
 
 <br></br>
 <br></br>

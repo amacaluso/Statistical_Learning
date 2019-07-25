@@ -1,12 +1,12 @@
 ##<a name="22_LDA" style="pointer-events: none; cursor: default;" ><font color="black"> 2.2. Linear Discriminant Analysis</font></a>
 
-L'analisi discriminante lineare (LDA) consiste in un tentativo alternativo di costruire una funzione discriminante. Infatti, riscrivendo $P(Y=g|X)$ come $\frac{f_g(\boldsymbol x)\pi_g}{\sum_{l=1}^{G}f_l(\boldsymbol x)\pi_l}$ si deduce che per stimare la probabilità di appartenenza ad una classe basta conoscere la funzione di densità della classe stessa, $f_g(\boldsymbol x)$ (e la sua probabilità a priori, $\pi_g$). Partendo da questa formulazione del problema, l'analisi discriminante lineare consiste nell'assumere che le $f_g(\boldsymbol x)$ siano gaussiane $p$-dimensionali con matrice di covarianza comune per tutte le classi. 
+The linear discriminant analysis (LDA) consists of an alternative solution for building a discriminant function. Indeed, rewriting $P(Y=g|X)$ as $\frac{f_g(x)\pi_g}{\sum_{l=1}^{G}f_l(x)\pi_l}$ it is possible to estimate the probability of each class based on its density function (and its prior probability). Starting from this formulation, the linear discriminant analysis assumes that the $f_g(x)$ are $p+1$-dimensional gaussian distribution with common covariance matrix.
 
-Una volta stimati i parametri delle $f_g(x)$ dai dati campionari, è possibile dimostrare che la funzione discriminante associata ad ogni classe risulta essere: 
-$$\delta_g(\boldsymbol x)=\boldsymbol x^{T}\Sigma^{-1}\boldsymbol \mu_g -\frac{1}{2}\boldsymbol \mu_g^T\Sigma^{-1}\boldsymbol \mu_g+\log{\pi_g}$$
-Per classificare basta poi scegliere $g_*=argmax_g\delta_g(x)$
+Once the $f_g(x)$ are estimated based on sample data, it is then possible to show that the discriminant function associated to each category turns out to be:
+$$\delta_g(x)=x^{T}\Sigma^{-1}\mu_g -\frac{1}{2}\mu_g^T\Sigma^{-1}\mu_g+\log{\pi_g}$$
+Finally, in order to classify observations into one of the classes we simply pick $g_*=argmax_g\delta_g(x)$.
 
-Passando all'applicazione, il modello presenta una accuratezza pari a 0.7438 e una AUC pari a 0.8095.
+Passing to the application, the model reaches an accuracy of 0.7438 and an AUC of 0.8095.
 
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
@@ -19,15 +19,17 @@ plot
 <br></br>
 
 
-Alternativamente, il modello LDA può essere ricavato come combinazione lineare dei regressori che meglio separa le modalità della variabile di output. In altre parole, si cerca $a^Tx$ tale che i gruppi siano internamente il più omogenei possibili e il più possibile distanti fra loro, i.e. varianza tra le classi ampia e varianza entro piccola. In formule: $$\phi_*=argmax_{\textbf{a}}\frac{\textbf{a}^TB\textbf{a}}{\textbf{a}^TW\textbf{a}}$$
-dove $B$ è la matrice di covarianza tra i gruppi e $W$ quella entro.
+Alternatively, the LDA approach can be rephrased as finding the linear combination of the regressors that better separates the categories of the target variable. In other words, we have to find  $a^Tx$ such that the groups are internally as homogeneous as possible and as distant as possible among each other. This means we want low variability within each class and high between variance:
+$$\phi_*=argmax_{\textbf{a}}\frac{\textbf{a}^TB\textbf{a}}{\textbf{a}^TW\textbf{a}}$$
+where $B$ is the between-groups covariance matrix and $W$ the within one.
 
-Risolvendo questo problema di ottimizzazione si ricava:
+Solving this optimisation problem we get:
 $$(W^{-1}B-\phi I_{G \times G})\textbf{a}=0$$
 
-Questo sistema di equazioni lineari omogenee ammette soluzioni non banali se e solo se $(W^{-1}B-\phi I)=0$, i.e. se $\phi$ è un autovalore di $W^{-1}B$ e $\boldsymbol a$ contiene il relativo autovettore. Algebricamente, questo implica che ci sono al massimo $G-1$ soluzioni (rango di $W^{-1}B$) e, di conseguenza, $G-1$ direzioni discriminanti. Ora, siccome $\phi$ è proprio la quantità che vogliamo massimizzare, la funzione maggiormente discriminante sarà data dalla combinazione lineare delle features con coefficienti pari dall'autovettore corrispondente all'autovalore maggiore di $W^{-1}B$ e corrisponderà alla superficie che meglio separa un gruppo da tutti gli altri.
+This is a homogeneous system of linear equations, so it admits non-trivial solutions if and only if $(W^{-1}B-\phi I)=0$, i.e. if $\phi$ is an eigenvalue of $W^{-1}B$ and $a$ contains the correspondent eigenvector. Algebraically, this implies that we have at most $G-1$ solutions, precisely as many as the rank of $W^{-1}B$. As a consequence, there are no more than $G-1$ discriminant directions. Since $\phi$ is exactly the quantity we want to maximise, the best discriminant function is given by the eigenvector corresponding to the biggest eigenvalue of $W^{-1}B$. Namely, it is the surface that better separates one class from all the others.
 
-Nel caso di 2 classi avremo un solo autovalore non nullo e, quindi, una sola direzione discriminante. Per capire meglio il risultato di questo approccio possiamo infine rappresentare le osservazioni rispetto alla combinazione lineare $\boldsymbol a^Tx$, anche detta coordinata canonica, e sovraimporre il confine di decisione lineare.
+
+In the case of two categories, we have a single non-zero eigenvalue and, hence, a single discriminant direction. To understand better the results of this approach, the following plot displays the observations with respect to the linear combination  $a^Tx$, also called canonic coordinate, with the linear decision boundary superimposed.
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 file = "results/MODELING/CLASSIFICATION/canonical_variable.Rdata"
@@ -43,13 +45,14 @@ subplot( canonical_variable, canonical_variable2) %>% layout(  title = 'Variabil
 <br></br>
 <br></br>
 
-Come si nota, le due classi non risultano molto separate. Probabilmente le discrete performance del modello sono dovute al fatto che le 2 categorie siano sbilanciate e che questa funzione discriminante permetta di classificare correttamente la maggior parte delle osservazioni di classe 1 in eccesso.
+Notice that the two classes do not appear very separated. Probably, the quite decent performances of the model are because the dataset is unbalanced and that the model correctly classifies the most represented categories. i.e. observations of class 1.
 
-Si noti che, comparando i risultati di questo secondo approccio e della funzione *lda*, otterremmo a primo acchito un vettore $a$ differente dal *Coefficients of linear discriminants* riportato dalla funzione. Queste differenze sono dovute tuttavia ad una mera questione di parametrizzazione, dal momento che in R viene effettuata una normalizzazione tale da rendere la matrice di covarianza entro i gruppi sferica, i.e.:
+Comparing the results of the two LDA formulations, we observe that the vector $a$ is unexpectedly different from the *Coefficients of linear discriminants* computed by the R routine.
+However, this is merely a matter of parameterisation. In fact, R uses a normalisation that makes the within-covariance matrix spherical, i.e.:
 
 $$ \textbf{a}^TW\textbf{a} = \Psi_{diag} $$
 
-Pertanto, partendo dal secondo metodo è possibile ottenere gli stessi coefficienti della funzione *lda* post-moltiplicando il vettore $\textbf{a}$ per la matrice $\Psi^{-\frac{1}{2}}$.
+Therefore, starting from the second formulation, it is possible to get the same coefficients of the function *lda* post-multiplying the vector $\textbf{a}$ by the matrix $\Psi^{-\frac{1}{2}}$.
 
 <br></br>
 <br></br>

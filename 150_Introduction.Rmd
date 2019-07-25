@@ -1,10 +1,9 @@
-##<a name="1_Introduzione" style="pointer-events: none; cursor: default;" ><font color="black"> 1. Introduzione </font></a>
+<h2> <a name="1_Introduction" style="pointer-events: none; cursor: default;" ><font color="black"> 1. Introduction </font></a> </h2>
 
+This report presents a statistical analysis of the wine quality dataset released by the Portuguese firm Vinho Verde, aiming at classifying sample qualities based on their physical-chemical properties. To this end, various models and different approaches are compared so to individuate the best in terms of out-of-sample predictions.
 
-Lo scopo di questo report è portare avanti un'analisi di classificazione a partire dai dati riguardanti alcune caratteristiche fisico-chimiche del vino portoghese Vinho Verde, mettendo a confronto vari modelli e individuando quello migliore sulla base delle performance di previsione. 
-
-I dati a disposizione sono organizzati in due tabelle separate a seconda della tipologia di vino (rosso, 1599 unità, o bianco, 4898), tuttavia ai fini di questa analisi i due dataset sono stati uniti ed è stata aggiunta una variabile, *type*, che vale rispettivamente 0 e 1 in base alla categoria a cui ciascuna unità appartiene, per un totale di $n=6497$ unità statistiche. 
-La variabile target presa in esame è *quality*, che esprime la qualità del vino e che è stata ottenuta come mediana di almeno 3 voti (da 0 a 10) espressi da esperti sommelier.
+The original data are split according to the wine typology, with  4898 white wine samples and 1599 are reds. However, the two sets are considered altogether in this report, and a variable *type* is added with value 1 for white wines and 0 otherwise.  All in all, the final dataset is then composed of a total of $n=6497$ statistical units, with 11 variables expressing physical-chemical qualities and the additional feature *type*. 
+The target variable is *quality* and measures the sample quality as an ordinal categorical variable in the range from 1 to 10. Each of its values is obtained as the median of at least 3 votes expressed by expert sommeliers.
 
 ```{r, fig.width=9.5, fig.height=5, echo=FALSE}
 file = "results/EXPLORATORY_ANALYSES/quality_distr.Rdata"
@@ -15,8 +14,9 @@ quality_distr
 <br></br>
 <br></br>
 
-Come si evince dall'istogramma riportato sopra, questa feature è una variabile politomica ordinata con modalità osservate che variano nell'intervallo $[3,9] \in \mathbb{N}$.
-Già a primo sguardo emerge molto chiaramente che le modalità 5 e 6 sono le più numerose, caratterizzando da sole il 76,6% del totale delle unità statistiche. Per questo motivo, per ottenere classi bilanciate, abbiamo pensato di introdurre una nuova variabile target a partire dalla variabile *quality* definita come segue: 
+As we can see, the actual range of the target is the inteval $[3,9] \in \mathbb{N}$. 
+Also, the categories 5 and 6 are the most numerous and they alone account for the 76.6% of the whole sample.  This may be a problem when training since the model could learn to predict just the most represented classes.
+For this reason, we try to balance the target variable by considering a binary version obtained as follows:  
 
 $$ \begin{equation}
   \textit{binary_quality} = 
@@ -26,21 +26,21 @@ $$ \begin{equation}
 \end{equation}$$
 
 
-Per ogni osservazione sono state misurate le seguenti caratteristiche fisico-chimiche:
+The physical-chemical information available is contained in the following variables:
 
-* Acidità fissa (*fixed.acidity*)
-* Acidità volatile (*volatile.acidity*)
-* Acido citrico (*citric.acid*)
-* Zucchero residuo (*residual.sugar*)
-* Cloruri (*chlorides*)
-* Anidride solforosa libera (*free.sulfur.dioxide*)
-* Anidride solforosa totale (*total.sulfur.dioxide*)
-* Densità (*density*)
+* Fixed Acidity  (*fixed.acidity*)
+* Volatile Acidity (*volatile.acidity*)
+* Citric Acid (*citric.acid*)
+* Residual Sugar (*residual.sugar*)
+* Chlorides (*chlorides*)
+* Free Sulphur Dioxide (*free.sulfur.dioxide*)
+* Total Sulphur Dioxide (*total.sulfur.dioxide*)
+* Density (*density*)
 * pH (*pH*)
-* Solfati (*sulphates*)
-* Alcol (*alcohol*)
+* Sulphates (*sulphates*)
+* Alcohol (*alcohol*)
 
-Di seguito sono riportate le densità di ciascuna variabile mettendo a confronto le distribuzioni in ciascuno dei due sottocampioni (curve del rispettivo colore) e nel dataset completo (curva blu):
+As first insight, the following plots illustrate the distributions of each variable in both subsamples (red and yellow curves) and in the whole dataset (blue curve):
 
 <br></br>
 ```{r, fig.width=9.5, fig.height=8, echo=FALSE}
@@ -71,12 +71,12 @@ multi_p = multiplot(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, cols = 4 
 <br></br>
 
 
-Le variabili sono quasi tutte *bell-shaped* ad eccezione di *total.sulfur.dioxide*, *citric.acid* e *chlorides* che mostrano alcuni sintomi di multimodalità, inoltre presentano per la maggior parte range di variazioni abbastanza simili. Malgrado quest'ultima caratteristica suggerisca una pre-lavorazione dei dati di input (e.g. standardizzazione), all'atto pratico i risultati non sembrano risentirne sensibilmente, per cui per comodità nel seguito è riportata l'analisi con i dati non trasformati.
+The features are mostly *bell-shaped*, except for *total.sulfur.dioxide*, *citric.acid* and *chlorides* that show some symptoms of being multimodal. Moreover, all the variables have a quite similar range of variation, thus suggesting some pre-processing (e.g. standardisation). For this reason, we performed the analysis both with and without preliminary transformations of the original data, and we found non-significant differences between the two approaches. Hence, only results obtained without pre-processing are shown in the following for convenience.
 
 
-Sebbene la correlazione non implichi necessariamente un collegamento causa-effetto delle variabili considerate, può comunque essere utile in ottica esplorativa indagare sul legame di interdipendenza tra la variabile *quality* e i predittori.
+Although correlation does not mean causation, it makes sense to explore the dependency structure between the target variable and each of the predictors.
 
-Di seguito è riportata la matrice di correlazione calcolata considerando l'intero dataset:
+For this purpose, the correlation matrix computed on the whole dataset is reported below:
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 file = "results/EXPLORATORY_ANALYSES/corrplot.Rdata"
@@ -87,13 +87,14 @@ corrplot
 <br></br>
 <br></br>
 
-La variabile *quality* (nella sua forma originale) è molto poco correlata con i diversi predittori. Solo in 2 casi, infatti, si ottiene un coefficiente di correlazione lineare maggiore di 0.3 (*alcohol*, *density*); d'altro canto, invece, alcuni predittori risultano molto correlati tra di loro. In particolare i valori più alti (in valore assoluto) che è possibile osservare nella matrice di correlazione sono:
+The target quality (in its original format) is very poorly correlated with the predictors, and just in two cases we observe a linear correlation coefficient above 0.3 (*alcohol* and *density*).
+On the other hand,  predictors appear highly linked to one another. In particular, the strongest relationships we can observe are:
 
 - *free.sulfur.dioxide* - *total.sulfur.dioxide* (0.72)
 - *density* - *alcohol* (-0.687)
 - *density* - *residual.sugar* (0.553)
 
-Considerando la natura della variabile *quality* è opportuno valutare la correlazione tra essa e le diverse variabili esplicative considerando il coefficiente di Spearman piuttosto che il coefficiente di Pearson:
+However, given the categorical nature of the variable Quality, it would be more appropriate to study its correlation structure based on the Spearman coefficient rather than the Pearson one:
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 file = "results/EXPLORATORY_ANALYSES/corr_Y.Rdata"
@@ -104,14 +105,16 @@ corr_Y
 <br></br>
 <br></br>
 
-Il coefficiente di correlazione di Spearman misura il grado di relazione tra due variabili per le quali non si fa altra ipotesi se non la natura ordinale, tuttavia può essere usato anche per variabili continue. Inoltre, non si limita ad individuare solamente relazioni di tipo lineare, come avviene invece per il coefficiente di correlazione di Pearson, ed è quindi preferibile.
 
-Per maggiori informazioni sui dati è possibile consultare il sito:
+The Spearman coefficient, $\rho$, measures the degree of relation between two ordinal categorical variables.
+Unlike the Pearson coefficient, Spearman $\rho$ assumes just a monotonic relationship between the variables (not necessarily a linear one).
+
+For more details on the dataset check:
 
 https://archive.ics.uci.edu/ml/datasets/wine+quality
 
 
-I risultati riportati nel seguito sono stati ottenuti sfruttando una divisione dei dati in training (60%) e test (40%) set.
+The analyses presented in the following are conducted considering about 60% of the data as training set and the remaining 40% for testing.
 
 
 <br></br>

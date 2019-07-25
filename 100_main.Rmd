@@ -1,11 +1,10 @@
-
-
 ---
 title: <center> Wine Quality Dataset - Statistical Learning Report </center>
 author: <br></br> <br></br> <right> L. Clissa, A. Macaluso e L. Pestarino </right>
-date: 5 Luglio 2018
-output:
-  html_document: default
+date: 5 July 2018
+output: 
+  html_document:
+   default
 ---
 
 <style>
@@ -29,14 +28,14 @@ library('DT')
 #source( "030_DATA_VIZ_CUSTOM.R")
 ```
 
-```{r child = '130_Indice.Rmd'}
+```{r child = '130_Index.Rmd'}
 ```
 
 
-```{r child = '150_Introduzione.Rmd'}
+```{r child = '150_Introduction.Rmd'}
 ```
 
-```{r child = '200_Classificazione.Rmd'}
+```{r child = '200_Classification.Rmd'}
 ```
 
 ```{r child = '210_LPM.Rmd'}
@@ -62,7 +61,7 @@ library('DT')
 ```{r child = '270_GAM.Rmd'}
 ```
  
-```{r child = '300_Conclusioni.Rmd'}
+```{r child = '300_Conclusion.Rmd'}
 ```
  
  
