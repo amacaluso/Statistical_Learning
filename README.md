@@ -1,5 +1,4 @@
 # Statistical Learning
-<div style="text-align: justify">
 This repository is intended to provide a slideshow of classification models, with a focus on the statistical properties of each approach. Specifically, a wide variety of both linear and non-linear methods are adopted and the compared, ranging from **Linear Probability Model** and **Logistic Regression** to **Quadratic Discriminant Analysis** and **Generalised Additive Models**.
 
 In order to do that, the wine quality dataset is considered. For more information, please refer to [https://archive.ics.uci.edu/ml/datasets/wine+quality](https://archive.ics.uci.edu/ml/datasets/wine+quality).
@@ -45,4 +44,4 @@ The main script is *000_run_project.R* that executes the source code of the thre
 - **Reporting:** gather together the results of the analysis and the markdown files with the comments to produce a final report
 
 Backtracing these scripts, it is then possible to get the source code that performs each bit of the analysis itself, from data visualisation to modelling. Also, it may be useful to explore how to exploit **R Markdown** for building a report in an efficient and (hopefully) appealing way.
-</div>
+
