@@ -1,4 +1,4 @@
-##<a name="22_LDA" style="pointer-events: none; cursor: default;" ><font color="black"> 2.2. Linear Discriminant Analysis</font></a>
+<h2><a name="22_LDA" style="pointer-events: none; cursor: default;" ><font color="black"> 2.2. Linear Discriminant Analysis</font></a></h2>
 
 The linear discriminant analysis (LDA) consists of an alternative solution for building a discriminant function. Indeed, rewriting $P(Y=g|X)$ as $\frac{f_g(x)\pi_g}{\sum_{l=1}^{G}f_l(x)\pi_l}$ it is possible to estimate the probability of each class based on its density function (and its prior probability). Starting from this formulation, the linear discriminant analysis assumes that the $f_g(x)$ are $p+1$-dimensional gaussian distribution with common covariance matrix.
 
