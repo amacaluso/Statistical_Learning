@@ -1,0 +1,14 @@
+<h2><a name="24_LOGISTIC_REGRESSION" style="pointer-events: none; cursor: default;" ><font color="black"> 2.4. Logistic Regression</font></a></h2>
+
+
+The logistic regression is one of the most popular methods adopted for classification problems. The advantage of this model is that it allows estimating the probability of the event of interest directly.
+Once this is achieved, the classification is derived easily based on that probability value.
+
+More specifically, the estimates are obtained exploiting the logistic distribution:
+
+$$P(Y=1|X=x)=\frac{\exp{(\beta_0+\beta^Tx)}}{1+\exp{(\beta_0+\beta^Tx)}}$$
+
+The results of the application to our problem are in line with previous models so far. Performances are slightly worse, with an accuracy of 0.7388 and a test error of 0.2612. The same applies to the AUC (0.8088). The coefficients estimates are all highly significant though, except for the variable *chlorides*.
+
+<br></br>
+<br></br>
