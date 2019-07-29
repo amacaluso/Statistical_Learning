@@ -1,6 +1,6 @@
 ### **** Importazione dati e Descrittive **** ###
 
-source( '../code/Utils.R')
+source( 'code/Utils.R')
 
 ensureLibrary('MASS')
 ensureLibrary('glmnet')
@@ -32,17 +32,17 @@ ensureLibrary('rmarkdown')
 
 
 ### ***** SAVING FOLDER ***** ###
-dir.create( '../results' )
+dir.create( 'results' )
 
-folder = "../results/EXPLORATORY_ANALYSES"
+folder = "results/EXPLORATORY_ANALYSES"
 dir.create( folder )
 
 ##################################
 
 
 
-red <- read.table( '../data/winequality-red.csv', sep = ";" , header = T)
-white <- read.table( '../data/winequality-white.csv' ,sep=";" , header = T )
+red <- read.table( 'data/winequality-red.csv', sep = ";" , header = T)
+white <- read.table( 'data/winequality-white.csv' ,sep=";" , header = T )
 
 
 #create joint dataset
@@ -75,6 +75,6 @@ train.wine = wine[train.label, ]
 test.wine_binary = wine_binary[!train.label,]
 test.wine = wine[!train.label,]
 
-dir.create( '../results/MODELING/' )
+dir.create( 'results/MODELING/' )
 
 

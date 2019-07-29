@@ -20,9 +20,11 @@ text-align: justify}
 
 knitr::opts_chunk$set(echo = TRUE)
 
-source( '../code/Utils.R')
+setwd( rprojroot::find_rstudio_root_file() )
+
+source( 'code/Utils.R')
 SEED = 12344321
-source( '../code/020_Pre_processing.R')
+source( 'code/020_Pre_processing.R')
 
 library('ggplot2')
 library('plotly')
