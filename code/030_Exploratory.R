@@ -1,7 +1,8 @@
 ### **** Importazione dati e Descrittive **** ###
-source( 'Utils.R')
+source( 'code/Utils.R')
 SEED = 12344321
-source( '020_Pre_processing.R')
+
+source( 'code/020_Pre_processing.R')
 
 # EXPLORATORY ANALYSES ----------------------------------------------------
 folder = "results/EXPLORATORY_ANALYSES"

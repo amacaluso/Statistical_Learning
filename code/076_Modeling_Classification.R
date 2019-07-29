@@ -1,17 +1,17 @@
 ### ***** IMPORT ***** ###
 ##########################
 
-SEED = 12344321
-source( '072_Modeling_lpm.R') # REQUIRES SEED
+
+source( 'code/Utils.R')
 
 SEED = 12344321
-source( '074_Modeling_lda.R') # REQUIRES SEED
+source( 'code/072_Modeling_lpm.R') # REQUIRES SEED
 
-
-
-source( 'Utils.R')
 SEED = 12344321
-source( '020_Pre_processing.R') # REQUIRE SEED
+source( 'code/074_Modeling_lda.R') # REQUIRES SEED
+
+SEED = 12344321
+source( 'code/020_Pre_processing.R') # REQUIRE SEED
 
 
 

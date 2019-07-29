@@ -15,12 +15,16 @@ text-align: justify}
 <br></br>
 <br></br>
 
+
 ```{r setup, include=FALSE}
+
 knitr::opts_chunk$set(echo = TRUE)
 
-source( 'Utils.R')
+setwd( rprojroot::find_rstudio_root_file() )
+
+source( 'code/Utils.R')
 SEED = 12344321
-source( '020_Pre_processing.R')
+source( 'code/020_Pre_processing.R')
 
 library('ggplot2')
 library('plotly')
@@ -35,43 +39,38 @@ library('DT')
 ```{r child = '150_Introduction.Rmd'}
 ```
 
+
 ```{r child = '200_Classification.Rmd'}
 ```
+
 
 ```{r child = '210_LPM.Rmd'}
 ```
 
+
 ```{r child = '220_LDA.Rmd'}
 ```
- 
+
+
 ```{r child = '230_QDA.Rmd'}
 ```
 
+
 ```{r child = '240_LOGISTIC_REGRESSION.Rmd'}
 ```
- 
+
+
 ```{r child = '250_REGURALISED_METHODS.Rmd'}
 ```
 
- 
+
 ```{r child = '260_KNN.Rmd'}
 ```
 
  
 ```{r child = '270_GAM.Rmd'}
 ```
- 
+
+
 ```{r child = '300_Conclusion.Rmd'}
 ```
- 
- 
-
-
-
-
-
-
-
-
-
-

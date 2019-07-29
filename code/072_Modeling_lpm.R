@@ -3,8 +3,9 @@
 
 # SEED = 12344321
 
-source( 'Utils.R')
-source( '020_Pre_processing.R') # REQUIRE SEED
+source( 'code/Utils.R')
+
+source( 'code/020_Pre_processing.R') # REQUIRE SEED
 
 
 

@@ -14,7 +14,7 @@ The table below shows the optimal threshold for classification according to each
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
-file = "results/MODELING/CLASSIFICATION/ROC_best.Rdata"
+file = "../results/MODELING/CLASSIFICATION/ROC_best.Rdata"
 load( file )
 
 df[, -c(1,2)] = round(df[,-c(1,2)], 4)
@@ -35,7 +35,7 @@ In general, this can be explained observing that, in a classification problem, t
 Considering the AUC instead, the performances of the various models remain unchanged in terms of comparison. The only exception is KNN that falls from the second to the last position, thus shifting up all the intermediate models.
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
-file = "results/MODELING/CLASSIFICATION/roc_curve_all.Rdata"
+file = "../results/MODELING/CLASSIFICATION/roc_curve_all.Rdata"
 load( file )
 plot
 ```

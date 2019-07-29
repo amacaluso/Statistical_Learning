@@ -9,7 +9,7 @@ Also this model is in line with previous results, with an accuracy of 0.7572 and
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
-file = "results/MODELING/CLASSIFICATION/knn_cv_plot.Rdata"
+file = "../results/MODELING/CLASSIFICATION/knn_cv_plot.Rdata"
 load( file )
 plot
 ```

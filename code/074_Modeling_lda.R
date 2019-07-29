@@ -1,9 +1,9 @@
 ### ***** IMPORT ***** ###
 ##########################
 
-source( 'Utils.R')
+source( 'code/Utils.R')
 #SEED = 12344321
-source( '020_Pre_processing.R') # REQUIRE SEED
+source( 'code/020_Pre_processing.R') # REQUIRE SEED
 
 
 

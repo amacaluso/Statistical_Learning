@@ -32,7 +32,7 @@ For this reason, although it is not possible to interpret the predicted scores a
 Passing to the application, we adopted such a model considering all of the initial regressors. It is easy to verify as, in general, the score of such models is not guaranteed to lie between 0 and 1, as anticipated:
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
-file = "results/MODELING/CLASSIFICATION/lpm_probs.Rdata"
+file = "../results/MODELING/CLASSIFICATION/lpm_probs.Rdata"
 load( file )
 plot
 ```
@@ -40,11 +40,12 @@ plot
 <br></br>
 <br></br>
 
-Dando uno sguardo all'output, possiamo notare come quasi tutte le variabili risultino significative per qualsiasi soglia $\alpha$ ragionevole. Le uniche eccezioni riscontrate sono *chlorides* e *citric.acid* con p-value rispettivamente di 0.37 e 0.08.
+
+Notice that almost all of the coefficients are statistically significant for any reasonable confidence level $\alpha$. The only exceptions are *chlorides* and *citric.acid*, with p-values of respectively 0.37 and 0.08.
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
-file = "results/MODELING/CLASSIFICATION/lpm_summary.Rdata"
+file = "../results/MODELING/CLASSIFICATION/lpm_summary.Rdata"
 load( file )
 
 datatable(df, 
@@ -62,7 +63,7 @@ This guess is confirmed when performing the analysis with standardised variables
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
-file = "results/MODELING/CLASSIFICATION/lpm_summary_std.Rdata"
+file = "../results/MODELING/CLASSIFICATION/lpm_summary_std.Rdata"
 load( file )
 
 datatable(df, 

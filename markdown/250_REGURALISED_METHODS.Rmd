@@ -30,7 +30,7 @@ The optimal values for $\lambda$ and $\alpha$  are obtained by 10-fold cross-val
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
-file = "results/MODELING/CLASSIFICATION/ply_val_elnet.Rdata"
+file = "../results/MODELING/CLASSIFICATION/ply_val_elnet.Rdata"
 load( file )
 plot
 ```
@@ -43,28 +43,28 @@ This suggests that in fact no regularisation is needed for the problem at hand. 
 Accuracy-wise the results are really similar, with values of 0.7305, 0.7345 and 0.7195 respectively.
 Same considerations are drawn looking at the ROC curves, with AUC values of 0.80, 0.7995 and 0.7897.
 
-Se osserviamo, però, i valori dei coefficienti, possiamo notare come la ridge regression includa, per costruzione, tutti i parametri nell’analisi mentre il lasso permette di effettuare una selezione tra essi eliminando *fixed.acidity*, *chlorides*, *density* nonché *type*.
-Di seguito è riportato il grafico del profilo dei coefficienti stimati dai due metodi al variare della penalizzazione.
-
-```{r, fig.width=9.5, fig.height=4, echo=FALSE}
-
-file = "results/MODELING/CLASSIFICATION/ridge_profile_plot.Rdata"
-load( file )
-plot
-```
-
-```{r, fig.width=9.5, fig.height=4, echo=FALSE}
-
-file = "results/MODELING/CLASSIFICATION/lasso_profile_plot.Rdata"
-load( file )
-plot
-```
-
-<br></br>
-<br></br>
-
 Focusing on the estimates of the coefficients, we have a confirmation of the fact that ridge regression includes all of the parameters, as expected. 
 O the contrary, the lasso allows performing feature selection based on the coefficients set to 0, i.e. *fixed.acidity*, *chlorides*, *density* and *type*.
+
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+
+file = "../results/MODELING/CLASSIFICATION/ridge_profile_plot.Rdata"
+load( file )
+plot
+```
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+
+file = "../results/MODELING/CLASSIFICATION/lasso_profile_plot.Rdata"
+load( file )
+plot
+```
+
+<br></br>
+<br></br>
+
+
 Likewise, elastic-net also performs parameter selection despite a penalisation coefficient very low. This time, however, only *fixed.acidity* and *type* are removed from the analysis.
 
 In light of these considerations, and due to the little difference in terms of performances, we may want to select the lasso approach since it reaches similar results with a simpler, more parsimonious model.

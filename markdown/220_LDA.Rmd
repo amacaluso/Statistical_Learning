@@ -10,7 +10,7 @@ Passing to the application, the model reaches an accuracy of 0.7438 and an AUC o
 
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
-file = "results/MODELING/CLASSIFICATION/lda_line_1_vs_0.Rdata"
+file = "../results/MODELING/CLASSIFICATION/lda_line_1_vs_0.Rdata"
 load( file )
 plot
 ```
@@ -32,10 +32,10 @@ This is a homogeneous system of linear equations, so it admits non-trivial solut
 In the case of two categories, we have a single non-zero eigenvalue and, hence, a single discriminant direction. To understand better the results of this approach, the following plot displays the observations with respect to the linear combination  $a^Tx$, also called canonic coordinate, with the linear decision boundary superimposed.
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
-file = "results/MODELING/CLASSIFICATION/canonical_variable.Rdata"
+file = "../results/MODELING/CLASSIFICATION/canonical_variable.Rdata"
 load( file )
 
-file = "results/MODELING/CLASSIFICATION/canonical_variable2.Rdata"
+file = "../results/MODELING/CLASSIFICATION/canonical_variable2.Rdata"
 load( file )
 
 subplot( canonical_variable, canonical_variable2) %>% layout(  title = 'Variabile Canonica')
