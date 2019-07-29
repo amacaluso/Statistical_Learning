@@ -1,0 +1,125 @@
+<h2> <a name="1_Introduction" style="pointer-events: none; cursor: default;" ><font color="black"> 1. Introduction </font></a> </h2>
+
+
+
+This report presents a statistical analysis of the wine quality dataset released by the Portuguese firm Vinho Verde, aiming at classifying sample qualities based on their physical-chemical properties. To this end, various models and different approaches are compared so to individuate the best in terms of out-of-sample predictions.
+
+The original data are split according to the wine typology, with  4898 white wine samples and 1599 are reds. However, the two sets are considered altogether in this report, and a variable *type* is added with value 1 for white wines and 0 otherwise.  All in all, the final dataset is then composed of a total of $n=6497$ statistical units, with 11 variables expressing physical-chemical qualities and the additional feature *type*. 
+The target variable is *quality* and measures the sample quality as an ordinal categorical variable in the range from 1 to 10. Each of its values is obtained as the median of at least 3 votes expressed by expert sommeliers.
+
+```{r, fig.width=9.5, fig.height=5, echo=FALSE}
+file = "../results/EXPLORATORY_ANALYSES/quality_distr.Rdata"
+load( file )
+quality_distr
+```
+
+<br></br>
+<br></br>
+
+As we can see, the actual range of the target is the inteval $[3,9] \in \mathbb{N}$. 
+Also, the categories 5 and 6 are the most numerous and they alone account for the 76.6% of the whole sample.  This may be a problem when training since the model could learn to predict just the most represented classes.
+For this reason, we try to balance the target variable by considering a binary version obtained as follows:  
+
+$$ \begin{equation}
+  \textit{binary_quality} = 
+  \begin{cases}
+   1    &\textit{se quality} > 5  \\ 0       &\textit{altrimenti}
+   \end{cases}
+\end{equation}$$
+
+
+The physical-chemical information available is contained in the following variables:
+
+* Fixed Acidity  (*fixed.acidity*)
+* Volatile Acidity (*volatile.acidity*)
+* Citric Acid (*citric.acid*)
+* Residual Sugar (*residual.sugar*)
+* Chlorides (*chlorides*)
+* Free Sulphur Dioxide (*free.sulfur.dioxide*)
+* Total Sulphur Dioxide (*total.sulfur.dioxide*)
+* Density (*density*)
+* pH (*pH*)
+* Sulphates (*sulphates*)
+* Alcohol (*alcohol*)
+
+As first insight, the following plots illustrate the distributions of each variable in both subsamples (red and yellow curves) and in the whole dataset (blue curve):
+
+<br></br>
+```{r, fig.width=9.5, fig.height=8, echo=FALSE}
+file = "../results/EXPLORATORY_ANALYSES/variables_density.Rdata"
+load( file )
+
+
+p1 = plots[[1]]
+p2 = plots[[2]]
+p3 = plots[[3]]
+p4 = plots[[4]]
+p5 = plots[[5]]
+p6 = plots[[6]]
+p7 = plots[[7]]
+p8 = plots[[8]]
+p9 = plots[[9]]
+p10 = plots[[10]]
+p11 = plots[[11]]
+p12 = plots[[12]]
+
+multi_p = multiplot(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, cols = 4 )
+
+
+
+```
+
+<br></br>
+<br></br>
+
+
+The features are mostly *bell-shaped*, except for *total.sulfur.dioxide*, *citric.acid* and *chlorides* that show some symptoms of being multimodal. Moreover, all the variables have a quite similar range of variation, thus suggesting some pre-processing (e.g. standardisation). For this reason, we performed the analysis both with and without preliminary transformations of the original data, and we found non-significant differences between the two approaches. Hence, only results obtained without pre-processing are shown in the following for convenience.
+
+
+Although correlation does not mean causation, it makes sense to explore the dependency structure between the target variable and each of the predictors.
+
+For this purpose, the correlation matrix computed on the whole dataset is reported below:
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+
+file = "../results/EXPLORATORY_ANALYSES/corrplot.Rdata"
+load( file )
+corrplot
+
+```
+
+<br></br>
+<br></br>
+
+The target quality (in its original format) is very poorly correlated with the predictors, and just in two cases we observe a linear correlation coefficient above 0.3 (*alcohol* and *density*).
+On the other hand,  predictors appear highly linked to one another. In particular, the strongest relationships we can observe are:
+
+- *free.sulfur.dioxide* - *total.sulfur.dioxide* (0.72)
+- *density* - *alcohol* (-0.687)
+- *density* - *residual.sugar* (0.553)
+
+However, given the categorical nature of the variable Quality, it would be more appropriate to study its correlation structure based on the Spearman coefficient rather than the Pearson one:
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+file = "../results/EXPLORATORY_ANALYSES/corr_Y.Rdata"
+load( file )
+corr_Y
+```
+
+<br></br>
+<br></br>
+
+
+The Spearman coefficient, $\rho$, measures the degree of relation between two ordinal categorical variables.
+Unlike the Pearson coefficient, Spearman $\rho$ assumes just a monotonic relationship between the variables (not necessarily a linear one).
+
+For more details on the dataset check:
+
+https://archive.ics.uci.edu/ml/datasets/wine+quality
+
+
+The analyses presented in the following are conducted considering about 60% of the data as training set and the remaining 40% for testing.
+
+
+<br></br>
+<br></br>

@@ -1,9 +1,0 @@
-##<a name="2_Classificazione" style="pointer-events: none; cursor: default;" ><font color="black"> 2. Modelli di Classificazione</font></a>
-
-
-In questa sezione sono presentati e messi a confronto vari modelli di classificazione con lo scopo di individuare quello con le migliori performance di previsione fuori campione. Le variabili considerate sono i 12 regressori contenuti nei due file di input più la variabile *type* derivante dall'unione dei due dataset e che assume valore 1 per i vini bianchi e 0 per quelli rossi. La variabile di output è anch'essa una lavorazione della variabile originaria *quality* ottenuta assegnando valore 0 ai vini di scarsa qualità (<=5) e 1 altrimenti.
-
-I metodi presi in esame in questa sezione appartengono alla classe dei *metodi di classificazione non lineari*, i.e. modelli che producono una funzione discriminante (o una sua trasformazione monotona) non lineare rispetto alle covariate per ciascuna modalità della variabile di output. In particolare, sono presentati Generalised Additive Model (GAM), Classification And Regression Tree (CART) e Random Forest (RF).
-
-<br></br>
-<br></br>

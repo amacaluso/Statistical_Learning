@@ -1,0 +1,73 @@
+<h2><a name="25_REGULARISED_METHODS" style="pointer-events: none; cursor: default;" ><font color="black"> 2.5. Regularised Methods</font></a></h2>
+
+
+
+The rationale behind these methods is to regularise the estimates of the parameters by shrinking their value towards zero. Among the different options for doing so, we consider three alternatives: ridge regression, logistic lasso and elastic-net. All of them make use of the tuning parameter
+$\lambda$  that influences the effect of the penalisation, but they differ in the type of penalty introduced.
+The learning process is conducted via cross-validation on the training set, while the results reported below are computed on the test set.
+
+The ridge regression uses a penalisation of type $\ell_2$ and tries to solve the following optimisation problem:
+
+$$\min_{(\beta_0,\beta)\in\mathbb{R}^{p+1}}-{\biggl[
+\frac{1}{n} \sum_{i=1}^{n}{y_i(\beta_0+x_i^T\beta)-\log{(1+\exp{(\beta_0+x_i^T\beta))}}}
+\biggr] + \lambda ||\beta||_2^2}$$
+
+This type of formula allows shrinking parameter values towards zero without ever cancelling it completely. On the contrary, using the $\ell_1$ norm as a penalty, the lasso can set to precisely zero some of the coefficients provided that $\lambda$ is sufficiently large:
+ 
+$$\min_{(\beta_0,\beta)\in\mathbb{R}^{p+1}}-{\biggl[
+\frac{1}{n} \sum_{i=1}^{n}{y_i(\beta_0+x_i^T\beta)-\log{(1+\exp{(\beta_0+x_i^T\beta))}}}
+\biggr] + \lambda ||\beta||_1}$$
+ 
+Finally, elastic-net builds a hybrid solution between the two above. In fact, it adopts the following double penalty ruled by the parameter $\alpha$, thus combining the advantages of the previous approaches:
+
+$$\min_{(\beta_0,\beta)\in\mathbb{R}^{p+1}}-{\biggl[
+\frac{1}{n} \sum_{i=1}^{n}{y_i(\beta_0+x_i^T\beta)-\log{(1+\exp{(\beta_0+x_i^T\beta))}}}
+\biggr] + \lambda[ \alpha ||\beta||_1 + (1-\alpha)||\beta||_2^2]}$$
+
+
+
+The optimal values for $\lambda$ and $\alpha$  are obtained by 10-fold cross-validation.
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+
+file = "../results/MODELING/CLASSIFICATION/ply_val_elnet.Rdata"
+load( file )
+plot
+```
+
+<br></br>
+<br></br>
+
+Analysing the results obtained, we can observe as the ridge regression reaches the highest accuracy. However, the three methods have worse performances than the plain logistic regression, i.e. without penalisation.
+This suggests that in fact no regularisation is needed for the problem at hand. A further clue in favour of this thesis is then given by the estimates of shrinkage parameters, which are all close to zero. In particular, it is interesting to notice that the value picked for $\alpha$ in the elastic-net approach is equal to 0.05. This means that the two penalties are not generally very effective and that the one related to the ridge solution is the most relevant, as found in the disentangled experiments.
+Accuracy-wise the results are really similar, with values of 0.7305, 0.7345 and 0.7195 respectively.
+Same considerations are drawn looking at the ROC curves, with AUC values of 0.80, 0.7995 and 0.7897.
+
+Focusing on the estimates of the coefficients, we have a confirmation of the fact that ridge regression includes all of the parameters, as expected. 
+O the contrary, the lasso allows performing feature selection based on the coefficients set to 0, i.e. *fixed.acidity*, *chlorides*, *density* and *type*.
+
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+
+file = "../results/MODELING/CLASSIFICATION/ridge_profile_plot.Rdata"
+load( file )
+plot
+```
+
+```{r, fig.width=9.5, fig.height=4, echo=FALSE}
+
+file = "../results/MODELING/CLASSIFICATION/lasso_profile_plot.Rdata"
+load( file )
+plot
+```
+
+<br></br>
+<br></br>
+
+
+Likewise, elastic-net also performs parameter selection despite a penalisation coefficient very low. This time, however, only *fixed.acidity* and *type* are removed from the analysis.
+
+In light of these considerations, and due to the little difference in terms of performances, we may want to select the lasso approach since it reaches similar results with a simpler, more parsimonious model.
+
+<br></br>
+<br></br>
