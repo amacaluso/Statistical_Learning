@@ -29,10 +29,10 @@ conda install -c mdekstrand r-plotroc
 Otherwise, you are just ready to start investigating the report or playing around with the R code.
 
 ## Usage
-The repository contains both the ready-made statistical analysis and all of the R code used to obtain the results.
+The repository contains both the ready-made statistical analysis and all of the R code used to obtain the results. The set of markdown script adopted to create the HTML report are delivered in the *markdown* directory, while the bits of code used to perform the analysis are present in the folder *code*.
 
 ### Report
-A thorough report is presented in the file *Original_report.html*, that describes in details all the steps of the analysis. A thorough argumentation of statistical properties of each approach is also dealt with, with particular attention to how to evaluate the various techniques and how to compare their performances. 
+A thorough report is presented in the file *Statistical_Learning.html*, that describes in details all the steps of the analysis. A thorough argumentation of statistical properties of each approach is also treated, with a particular attention on how to evaluate the various techniques and how to compare their performances. 
 Furthermore, the report's plots are mostly interactive so to allow the user to explore the results autonomously and to dig into details of greater personal interest.
 
 ### Code
@@ -41,6 +41,6 @@ The code adopted to obtain the report is then available in the R scripts. They a
 The main script is *000_run_project.R* that executes the source code of the three parts of the analysis:
 - **Data exploration:** contains all the preliminary data investigation and it is organised in the script *030_Exploratory.R*
 - **Modelling:** performs all the training and evaluation of the proposed methods and it is hosted in the script *076_Modeling_Classification.R*
-- **Reporting:** gather together the results of the analysis and the markdown files with the comments to produce a final report
+- **Reporting:** gathers together the results of the analysis and the markdown files with the comments to produce a final report
 
 Backtracing these scripts, it is then possible to get the source code that performs each bit of the analysis itself, from data visualisation to modelling. Also, it may be useful to explore how to exploit **R Markdown** for building a report in an efficient and (hopefully) appealing way.
