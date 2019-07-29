@@ -30,7 +30,7 @@ The optimal values for $\lambda$ and $\alpha$  are obtained by 10-fold cross-val
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
-file = "results/MODELING/CLASSIFICATION/ply_val_elnet.Rdata"
+file = "../results/MODELING/CLASSIFICATION/ply_val_elnet.Rdata"
 load( file )
 plot
 ```
@@ -49,14 +49,14 @@ O the contrary, the lasso allows performing feature selection based on the coeff
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
-file = "results/MODELING/CLASSIFICATION/ridge_profile_plot.Rdata"
+file = "../results/MODELING/CLASSIFICATION/ridge_profile_plot.Rdata"
 load( file )
 plot
 ```
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
-file = "results/MODELING/CLASSIFICATION/lasso_profile_plot.Rdata"
+file = "../results/MODELING/CLASSIFICATION/lasso_profile_plot.Rdata"
 load( file )
 plot
 ```

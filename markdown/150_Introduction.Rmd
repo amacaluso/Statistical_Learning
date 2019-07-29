@@ -8,7 +8,7 @@ The original data are split according to the wine typology, with  4898 white win
 The target variable is *quality* and measures the sample quality as an ordinal categorical variable in the range from 1 to 10. Each of its values is obtained as the median of at least 3 votes expressed by expert sommeliers.
 
 ```{r, fig.width=9.5, fig.height=5, echo=FALSE}
-file = "results/EXPLORATORY_ANALYSES/quality_distr.Rdata"
+file = "../results/EXPLORATORY_ANALYSES/quality_distr.Rdata"
 load( file )
 quality_distr
 ```
@@ -46,7 +46,7 @@ As first insight, the following plots illustrate the distributions of each varia
 
 <br></br>
 ```{r, fig.width=9.5, fig.height=8, echo=FALSE}
-file = "results/EXPLORATORY_ANALYSES/variables_density.Rdata"
+file = "../results/EXPLORATORY_ANALYSES/variables_density.Rdata"
 load( file )
 
 
@@ -81,9 +81,11 @@ Although correlation does not mean causation, it makes sense to explore the depe
 For this purpose, the correlation matrix computed on the whole dataset is reported below:
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
-file = "results/EXPLORATORY_ANALYSES/corrplot.Rdata"
+
+file = "../results/EXPLORATORY_ANALYSES/corrplot.Rdata"
 load( file )
 corrplot
+
 ```
 
 <br></br>
@@ -99,7 +101,7 @@ On the other hand,  predictors appear highly linked to one another. In particula
 However, given the categorical nature of the variable Quality, it would be more appropriate to study its correlation structure based on the Spearman coefficient rather than the Pearson one:
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
-file = "results/EXPLORATORY_ANALYSES/corr_Y.Rdata"
+file = "../results/EXPLORATORY_ANALYSES/corr_Y.Rdata"
 load( file )
 corr_Y
 ```
