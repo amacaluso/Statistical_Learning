@@ -23,7 +23,7 @@ For this reason, we try to balance the target variable by considering a binary v
 $$ \begin{equation}
   \textit{binary_quality} = 
   \begin{cases}
-   1    &\textit{se quality} > 5  \\ 0       &\textit{altrimenti}
+   1    &\textit{if quality} > 5  \\ 0       &\textit{otherwise}
    \end{cases}
 \end{equation}$$
 

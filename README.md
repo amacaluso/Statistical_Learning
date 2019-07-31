@@ -3,6 +3,10 @@ This repository is intended to provide a slideshow of classification models, wit
 
 In order to do that, the wine quality dataset is considered. For more information, please refer to [https://archive.ics.uci.edu/ml/datasets/wine+quality](https://archive.ics.uci.edu/ml/datasets/wine+quality).
 
+<p align="center">
+  <img width="800" height="200" src="./main-vinho-verde.png">
+</p>
+
 ## Installation
 
 Clone the repository where it is more convenient for you.
