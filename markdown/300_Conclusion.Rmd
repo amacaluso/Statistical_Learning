@@ -1,20 +1,15 @@
-<h2><a name="3_Conclusion" style="pointer-events: none; cursor: default;" ><font color="black">3. Conclusion</font></a></h2>
+##<a name="300_Conclusioni" style="pointer-events: none; cursor: default;" ><font color="red">3. Conclusioni</font></a>
 
-n this report, we have conducted a classification analysis and we have compared many different approaches to this end, in a view typical of the data science field: selecting the model that guarantees the best out-of-samples predictions.
-Nonetheless, theoretical insights on the statistical properties of several models have also been treated.
+In questo report, dunque, abbiamo condotto un'analisi il cui scopo è stato quello di mettere a confronto più metodi di classificazione in un'ottica propria della data science, i.e. prendendo come metrica di paragone l'errore di previsione fuori campione. 
+<!-- Ciononostante, abbiamo cercato di inserire di tanto in tanto anche alcuni approfondimenti più teorici che offrissero degli spunti sul funzionamento di alcuni modelli. -->
 
-In summary, the comparison takes into account the adoption of:
+Nello specifico, il confronto è stato condotto indagando l'utilizzo di metodi di classificazione non lineari quali Generalised Additive Model, Classification And Regression Tree e Random Forest.
 
-- linear classification models, i.e. *Linear Probability Model*, *Linear Discriminant Analysis*, *Logistic Regression* and the regularised versions through *Ridge*, *Lasso* and *Elastic-net* penalties;
-
-- non-linear classification models, i.e. *Quadratic Discriminant Analysis*, *K-Nearest Neighbour* and *Generalised Additive Models*;
-
-The table below shows the optimal threshold for classification according to each of the model explored, together with the relative test set accuracy, sensitivity, specificity and AUC.
-
+Nella tabella di seguito, per ogni modello sono riportati i valori della soglia che massimizza le performance nel test set con la relativa accuratezza raggiunta, la sensibilità e la specificità ed, infine, l'AUC.
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
 
-file = "../results/MODELING/CLASSIFICATION/ROC_best.Rdata"
+file = "../results/MODELING/CLASSIFICATION/ROC_best_DM.Rdata"
 load( file )
 
 df[, -c(1,2)] = round(df[,-c(1,2)], 4)
@@ -28,14 +23,14 @@ datatable(df,
 <br></br>
 <br></br>
 
-Looking at the accuracy metric, the GAM is the one performing better (0.7735), followed by KNN (0.7512) and all of the linear models. Notice that, excluding the regularised approaches, QDA is the worst notwithstanding the use of a more complex and flexible separation surface.
-On the other hand, it is interesting to notice how the LPM is placed on the last step of the podium (0.7488) despite its simplicity and the theoretical inadequacy to represent a probability through an output not bounded in $[0,1]$. 
-In general, this can be explained observing that, in a classification problem, the critical task is not to predict precisely the probability of each category but rather to separate the classes properly.
+Se prendiamo in considerazione l'accuratezza del modello, possiamo notare che la Random Forest è quella che performa meglio (0.8225), seguita dal GAM (0.7725 per il modello con edf pari per tutti i regressori e 0.7678 per quello con edf stimati dall'algoritmo) e dal CART (0.7478).
 
-Considering the AUC instead, the performances of the various models remain unchanged in terms of comparison. The only exception is KNN that falls from the second to the last position, thus shifting up all the intermediate models.
+**VALUTARE SE AGGIUNGERE QUALCHE INTERPRETAZIONE TEORICA DEI DATI**
+
+Guardando invece all'AUC, le performance dei vari modelli rimangono comparativamente inalterate con aree sotto la curva rispettivamente di 0.8935, 0.83, 0.8261 e 0.7794.
 
 ```{r, fig.width=9.5, fig.height=4, echo=FALSE}
-file = "../results/MODELING/CLASSIFICATION/roc_curve_all.Rdata"
+file = "../results/MODELING/CLASSIFICATION/roc_curve_all_DM.Rdata"
 load( file )
 plot
 ```
@@ -43,10 +38,7 @@ plot
 <br></br>
 <br></br>
 
-In conclusion, the GAM is the best model both in terms of accuracy and AUC, strictly followed by KNN and LMP.
-
-However, the performances of the various models are quite similar, as we can see from the ROC curves above, which are all very close.
-That being considered, one may decide to prefer a more parsimonious model in order to gain in simplicity and interpretability at the expense of a minimal loss in predictive performance.
+In conclusione, la Random Forest è quella che performa meglio di tutti sia in termini di accuratezza che di AUC, seguita dai due modelli GAM e, infine, il CART. In questo caso quindi, l'introduzione di una maggiore complessità porta effettivamente ad un netto miglioramento delle performance predittive ed è quindi preferibile malgrado la minore interpretabilità.
 
 <br></br>
 <br></br>

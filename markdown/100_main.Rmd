@@ -60,7 +60,7 @@ library('DT')
 ```
 
 
-```{r child = '250_REGURALISED_METHODS.Rmd'}
+```{r child = '250_REGULARISED_METHODS.Rmd'}
 ```
 
 
@@ -69,6 +69,15 @@ library('DT')
 
  
 ```{r child = '270_GAM.Rmd'}
+```
+
+
+
+```{r child = '280_CART.Rmd'}
+```
+
+
+```{r child = '290_RF.Rmd'}
 ```
 
 

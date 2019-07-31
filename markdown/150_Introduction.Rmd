@@ -82,7 +82,7 @@ For this purpose, the correlation matrix computed on the whole dataset is report
 
 
 ```{r, fig.width=9.5, fig.height=6, echo=FALSE}
-file = "results/EXPLORATORY_ANALYSES/corrplot.Rdata"
+file = "../results/EXPLORATORY_ANALYSES/corrplot.Rdata"
 load( file )
 corrplot
 
