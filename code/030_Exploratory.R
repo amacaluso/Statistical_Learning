@@ -132,7 +132,7 @@ corrplot = ggplotly( ggcorrplot(corr_matrix, hc.order = TRUE,
                                 outline.col = "white",
                                 #ggtheme = ggplot2::theme_gray,
                                 colors = c("#6D9EC1", "white", "#E46726")) +
-                       ggtitle("Matrice di correlazione"))
+                       ggtitle("Correlation matrix"))
 # ********** Saving a file ******************* #
 file_name = paste0( folder, "/corrplot.Rdata")
 save( corrplot, file = file_name)
@@ -168,7 +168,7 @@ data_corr = data.frame( Variables = colnames( wine[ , 1:11]),
 corr_Y = ggplot(data_corr, aes( Variables, Spearman, fill = Variables, text = paste('Kendall:', Kendall, "\n", 
                                                                                     'Pearson:', Pearson, "\n" ))) +
          geom_bar(  stat = "identity", position='stack') + 
-         ggtitle( "Correlazione della variabile Qualità" ) + guides( fill = FALSE ) +
+         ggtitle( "Quality variable correlation" ) + guides( fill = FALSE ) +
          theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
          ylab("Spearman's correlation") 
 #  theme(axis.text.x = element_text(angle = 45, vjust = 1,  size = 12, hjust = 1))
@@ -189,7 +189,7 @@ df$Relative_Freq = paste( round( df$Frequencies/sum(df$Frequencies)*100, 1), '%'
 quality_distr = ggplot(data=df, aes(x=Quality, y=Frequencies, fill = Quality)) +
                 geom_bar(stat="identity") + 
                 geom_text(aes(label=Relative_Freq),  vjust=-5, color="black") + #
-                ggtitle( 'Qualità - Distribuzione di frequenza')
+                ggtitle( 'Quality - Frequency Distribution')
 
 quality_distr = ggplotly( quality_distr )
 
@@ -201,4 +201,3 @@ save( quality_distr, file = file_name)
 
 rm(list= ls())
 
-cat('\n\n SCRIPT ESEGUITO CORRETTAMENTE!! \n\n')

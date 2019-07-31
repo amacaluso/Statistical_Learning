@@ -60,7 +60,7 @@ library('DT')
 ```
 
 
-```{r child = '250_REGURALISED_METHODS.Rmd'}
+```{r child = '250_REGULARISED_METHODS.Rmd'}
 ```
 
 

@@ -327,11 +327,11 @@ elnet_validation = ggplot(data = elnet_data, aes( x = lambda, group = alpha,
                                           #              "Precisione nominale:", Precision) +
                           geom_line( aes( y = Accuracy, color = alpha )) +
                           geom_point( aes( y = Accuracy, color = alpha ), show.legend = F) +    
-                          ggtitle( "Validazione parametri Elastic Net" ) +
+                          ggtitle( "Elastic Net validation" ) +
                           theme(plot.title = element_text(size = 15, face = "bold"))
 
 ply_val_elnet = ggplotly( elnet_validation ) %>%
-                layout(title = "Validazione parametri Elastic Net",
+                layout(title = "Elastic Net validation",
                        legend = list(orientation = "v")) # , y = 0, x = 0))
 
 save_plot( ply_val_elnet, type = "CLASSIFICATION")
@@ -392,12 +392,12 @@ gam_validation = ggplot(data = gam_data, aes( x = df)) +
                  geom_line( aes( y = Accuracy, color = 'red' )) +
                  geom_point( aes( y = Accuracy, color = 'red' ), show.legend = F) + 
                  geom_ribbon(aes(ymin=Accuracy-AccuracySD, ymax=Accuracy+AccuracySD), linetype=2, alpha=0.1) +
-                 ggtitle( "Validazione parametri GAM" ) +
+                 ggtitle( "GAM validation" ) +
                  theme(plot.title = element_text(size = 15, face = "bold")) + 
                  scale_x_continuous(breaks=1:10)
 
 ply_val_gam = ggplotly( gam_validation ) %>%
-                layout(title = "Validazione parametri GAM", showlegend = F)
+                layout(title = "GAM validation", showlegend = F)
                    # legend = list(orientation = "v")) # , y = 0, x = 0))
 save_plot( ply_val_gam, type = "CLASSIFICATION")
 
@@ -467,7 +467,7 @@ knn_kappa = ggplot(data = cv_df, aes(x = k)) +
 knn_kappa = ggplotly( knn_kappa )
 
 knn_cv_plot = subplot( knn_acc, knn_kappa ) %>% 
-              layout(title = "Validazione parametri knn - Accuratezza vs Kappa", legend = list(orientation = "v"))
+              layout(title = "knn validation - Accuracy vs Kappa", legend = list(orientation = "v"))
 
 
 save_plot( knn_cv_plot, type = 'CLASSIFICATION')

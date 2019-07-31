@@ -38,7 +38,7 @@ load( file )
 file = "../results/MODELING/CLASSIFICATION/canonical_variable2.Rdata"
 load( file )
 
-subplot( canonical_variable, canonical_variable2) %>% layout(  title = 'Variabile Canonica')
+subplot( canonical_variable, canonical_variable2) %>% layout(  title = 'Canonical variable')
 
 ```
 
