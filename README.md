@@ -1,5 +1,5 @@
 # Statistical Learning
-This repository is intended to provide a slideshow of classification models, with a focus on the statistical properties of each approach. Specifically, a wide variety of both linear and non-linear methods are adopted and the compared, ranging from **Linear Probability Model** and **Logistic Regression** to **Quadratic Discriminant Analysis** and **Generalised Additive Models**.
+This repository is intended to provide a slideshow of classification models, with a focus on the statistical properties of each approach. Specifically, a wide variety of both linear and non-linear methods are adopted and then compared, ranging from **Linear Probability Model** and **Logistic Regression** to **Quadratic Discriminant Analysis** and **Generalised Additive Models**.
 
 In order to do that, the wine quality dataset is considered. For more information, please refer to [https://archive.ics.uci.edu/ml/datasets/wine+quality](https://archive.ics.uci.edu/ml/datasets/wine+quality).
 
@@ -33,7 +33,7 @@ conda install -c mdekstrand r-plotroc
 Otherwise, you are just ready to start investigating the report or playing around with the R code.
 
 ## Usage
-The repository contains both the ready-made statistical analysis and all of the R code used to obtain the results. The set of markdown script adopted to create the HTML report are delivered in the *markdown* directory, while the bits of code used to perform the analysis are present in the folder *code*.
+The repository contains both the ready-made statistical analysis and all of the R code used to obtain the results. The set of markdown scripts adopted to create the HTML report are delivered in the *markdown* directory, while the bits of code used to perform the analysis are present in the folder *code*.
 
 ### Report
 A thorough report is presented in the file *Statistical_Learning.html*, that describes in details all the steps of the analysis. A thorough argumentation of statistical properties of each approach is also treated, with a particular attention on how to evaluate the various techniques and how to compare their performances. 
