@@ -463,7 +463,8 @@ knn_acc = ggplotly( knn_acc )
 knn_kappa = ggplot(data = cv_df, aes(x = k)) + 
             geom_line( aes( y = Kappa), col = 'olivedrab3') + 
             geom_point( aes( y = Kappa ), col = 'limegreen') +
-            geom_ribbon(aes(ymin=cv_df$Kappa_lower, ymax=cv_df$Kappa_upper), linetype=2, alpha=0.1)
+            geom_ribbon(aes(ymin=cv_df$Kappa_lower, ymax=cv_df$Kappa_upper), linetype=2, alpha=0.1) 
+
 knn_kappa = ggplotly( knn_kappa )
 
 knn_cv_plot = subplot( knn_acc, knn_kappa ) %>% 
@@ -552,5 +553,3 @@ roc_curve_all = ggplotly( roc_curve_all )
 save_plot( roc_curve_all, type = 'CLASSIFICATION')
 #################################################
 
-
-cat('\n\n SCRIPT ESEGUITO CORRETTAMENTE!! \n\n')
